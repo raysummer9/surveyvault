@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaFacebookF, FaLock, FaShieldAlt, FaStar } from 'react-icons/fa'
+import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight, FiUser } from 'react-icons/fi'
 import { HiOutlineLightningBolt } from 'react-icons/hi'
@@ -46,27 +46,6 @@ export function SignInPage() {
             <div className="hero-stat-label">Daily Streak</div>
             <div className="hero-stat-value">7 Days 🔥</div>
           </article>
-        </div>
-
-        <div className="hero-proof">
-          <div className="hero-avatars">
-            <span className="hero-avatar avatar-1" aria-hidden />
-            <span className="hero-avatar avatar-2" aria-hidden />
-            <span className="hero-avatar avatar-3" aria-hidden />
-            <span className="hero-avatar avatar-4" aria-hidden />
-          </div>
-          <p className="hero-proof-title">50,000+ members</p>
-          <p>earning every day</p>
-          <p className="hero-rating">
-            <span className="rating-stars">
-              <FaStar />
-              <FaStar />
-              <FaStar />
-              <FaStar />
-              <FaStar />
-            </span>{' '}
-            4.9/5 from 12,000+ reviews
-          </p>
         </div>
       </aside>
 
