@@ -1,29 +1,206 @@
-import { Link } from 'react-router-dom'
-import { PageSection } from '../../shared/ui/PageSection'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  IoBriefcaseOutline,
+  IoGiftOutline,
+  IoLocateOutline,
+  IoLockClosedOutline,
+  IoPersonCircleOutline,
+  IoRibbonOutline,
+  IoShieldCheckmarkOutline,
+} from 'react-icons/io5'
 
-const steps = [
-  'Profile details',
-  'Identity verification',
-  'Tax and payout information',
-  'Work eligibility checks',
+type StepStatus = 'completed' | 'active' | 'locked'
+
+type SetupStep = {
+  id: string
+  title: string
+  description: string
+  path: string
+}
+
+const setupSteps: SetupStep[] = [
+  {
+    id: 'profile',
+    title: 'Complete Profile',
+    description: 'Tell us about yourself so we can match you with relevant surveys.',
+    path: '/dashboard/onboarding/profile',
+  },
+  {
+    id: 'skill',
+    title: 'Skill Verification',
+    description: 'Take a short assessment to verify your expertise areas.',
+    path: '/dashboard/onboarding',
+  },
+  {
+    id: 'id',
+    title: 'ID Verification',
+    description: 'Upload a valid government-issued ID to verify your identity.',
+    path: '/dashboard/onboarding',
+  },
+  {
+    id: 'address',
+    title: 'Address Verification',
+    description: 'Confirm your residential address for payment processing.',
+    path: '/dashboard/onboarding',
+  },
 ]
 
+const navItems = ['Onboarding', 'Dashboard', 'Surveys', 'Earnings']
+
 export function OnboardingPage() {
+  const navigate = useNavigate()
+
+  const completionPercent = 0
+  const activeIndex = 0
+  const workforceUnlocked = false
+
+  const statuses = useMemo(
+    () =>
+      setupSteps.map((_, index) => {
+        if (index === activeIndex) return 'active'
+        return 'locked'
+      }),
+    [activeIndex],
+  )
+
+  const handleStepAction = (step: SetupStep, status: StepStatus) => {
+    if (status === 'locked') return
+    if (status === 'active') {
+      navigate(step.path)
+    }
+  }
+
   return (
-    <PageSection
-      title="Onboarding"
-      description="Users must complete onboarding before they can pay the one-time join fee."
-    >
-      <ol className="list">
-        {steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
-      <div className="actions">
-        <Link className="button" to="/workforce/join">
-          Continue to one-time payment
-        </Link>
+    <section className="onboarding-shell">
+      <aside className="onboarding-sidebar">
+        <div className="onboarding-logo">
+          <span className="brand-icon">S</span>
+          <span>SurveyVault</span>
+        </div>
+
+        <p className="onboarding-nav-title">Account Setup</p>
+        <nav className="onboarding-nav">
+          {navItems.map((item, idx) => {
+            const isActive = idx === 0
+            return (
+              <button key={item} className={isActive ? 'onboarding-nav-item active' : 'onboarding-nav-item'}>
+                <span>{item}</span>
+                {!isActive && <IoLockClosedOutline />}
+              </button>
+            )
+          })}
+        </nav>
+
+        <div className="onboarding-member">
+          <IoPersonCircleOutline />
+          <div>
+            <p>New Member</p>
+            <small>Setup Pending</small>
+          </div>
+        </div>
+      </aside>
+
+      <div className="onboarding-main">
+        <header className="onboarding-topbar">
+          <h2>Account Verification</h2>
+          <span className="onboarding-chip">Action Required</span>
+        </header>
+
+        <div className="onboarding-content">
+          <article className="onboarding-welcome-card">
+            <h3>Welcome to the team! 👋</h3>
+            <p>
+              To maintain the quality of our research panel, we need to verify a few details before
+              you can join the workforce and start earning.
+            </p>
+            <div className="setup-progress-head">
+              <span>Setup Progress</span>
+              <strong>{completionPercent}% Complete</strong>
+            </div>
+            <div className="setup-progress-track">
+              <div style={{ width: `${completionPercent}%` }} />
+            </div>
+            <small>Complete all 4 steps below to unlock your dashboard.</small>
+          </article>
+
+          <div className="onboarding-steps">
+            {setupSteps.map((step, index) => {
+              const status = statuses[index]
+              const isActive = status === 'active'
+              const isLocked = status === 'locked'
+
+              return (
+                <article key={step.id} className={isLocked ? 'onboarding-step locked' : 'onboarding-step'}>
+                  <div
+                    className={isActive ? 'step-icon active' : 'step-icon locked'}
+                  >
+                    {index === 0 ? (
+                      <IoPersonCircleOutline />
+                    ) : index === 1 ? (
+                      <IoRibbonOutline />
+                    ) : index === 2 ? (
+                      <IoShieldCheckmarkOutline />
+                    ) : (
+                      <IoLocateOutline />
+                    )}
+                  </div>
+                  <div className="step-copy">
+                    <p className="step-title">
+                      {step.title}{' '}
+                      <span className="status-badge pending">{isActive ? 'Required' : 'Pending'}</span>
+                    </p>
+                    <p className="step-desc">{step.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className={isActive ? 'step-action' : 'step-action disabled'}
+                    disabled={!isActive}
+                    onClick={() => handleStepAction(step, status)}
+                  >
+                    {isActive ? (
+                      'Start Now'
+                    ) : (
+                      <>
+                        <IoLockClosedOutline />
+                        Locked
+                      </>
+                    )}
+                  </button>
+                </article>
+              )
+            })}
+          </div>
+
+          <div className="onboarding-divider" />
+
+          <article className={workforceUnlocked ? 'workforce-card unlocked' : 'workforce-card'}>
+            <div className="workforce-icon">
+              {workforceUnlocked ? <IoBriefcaseOutline /> : <IoGiftOutline />}
+            </div>
+            <h4>Join the Workforce</h4>
+            <p>
+              Complete all verification steps above to unlock access to paid surveys, daily bonuses,
+              and withdrawals.
+            </p>
+            <button
+              type="button"
+              className={workforceUnlocked ? 'step-action' : 'step-action disabled'}
+              disabled={!workforceUnlocked}
+              onClick={() => navigate('/dashboard/workforce/join')}
+            >
+              {workforceUnlocked ? (
+                'Continue'
+              ) : (
+                <>
+                  <IoLockClosedOutline />
+                  Locked
+                </>
+              )}
+            </button>
+          </article>
+        </div>
       </div>
-    </PageSection>
+    </section>
   )
 }

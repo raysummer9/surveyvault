@@ -20,28 +20,32 @@ const benefits = [
     icon: MdAttachMoney,
     title: 'Earn Real Cash',
     desc: 'Get paid via PayPal, bank transfer, or gift cards',
-    highlight: '$2-$50 per survey',
+    metric: '$2-$50',
+    metricSub: 'per survey',
     color: 'green',
   },
   {
     icon: MdOutlineDescription,
     title: 'Matched Surveys',
     desc: 'AI-matched to your profile for higher acceptance',
-    highlight: '95% match rate',
+    metric: '95%',
+    metricSub: 'match rate',
     color: 'blue',
   },
   {
     icon: HiOutlineLightningBolt,
     title: 'Instant Payouts',
     desc: 'Withdraw earnings as soon as you hit $10',
-    highlight: '24hr processing',
+    metric: '24hr',
+    metricSub: 'processing',
     color: 'purple',
   },
   {
     icon: MdGroups,
     title: 'Referral Bonuses',
     desc: 'Earn $5 for every friend you invite',
-    highlight: '$5 per referral',
+    metric: '$5',
+    metricSub: 'per referral',
     color: 'orange',
   },
 ]
@@ -56,7 +60,7 @@ export function RegisterPage() {
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
 
   return (
-    <section className="login-layout">
+    <section className="login-layout register-layout">
       <aside className="login-hero register-hero">
         <div className="login-hero-brand">
           <span className="brand-icon">S</span>
@@ -71,7 +75,7 @@ export function RegisterPage() {
         </p>
 
         <div className="register-benefits">
-          {benefits.map(({ icon: Icon, title, desc, highlight, color }) => (
+          {benefits.map(({ icon: Icon, title, desc, metric, metricSub, color }) => (
             <article key={title} className={`register-benefit register-benefit--${color}`}>
               <div className="register-benefit-icon">
                 <Icon />
@@ -80,7 +84,10 @@ export function RegisterPage() {
                 <div className="register-benefit-title">{title}</div>
                 <div className="register-benefit-desc">{desc}</div>
               </div>
-              <div className="register-benefit-highlight">{highlight}</div>
+              <div className="register-benefit-metric">
+                <div className="register-benefit-highlight">{metric}</div>
+                <div className="register-benefit-sub">{metricSub}</div>
+              </div>
             </article>
           ))}
         </div>
