@@ -1,13 +1,41 @@
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight, FiUser } from 'react-icons/fi'
 import { HiOutlineLightningBolt } from 'react-icons/hi'
 import { IoEyeOffOutline, IoEyeOutline, IoLockClosedOutline, IoMailOutline } from 'react-icons/io5'
+import { z } from 'zod'
+
+const signInSchema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(1, 'Password is required.'),
+})
 
 export function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const parsed = signInSchema.safeParse({ email, password })
+
+    if (!parsed.success) {
+      const nextErrors: { email?: string; password?: string } = {}
+      parsed.error.issues.forEach((issue) => {
+        const field = issue.path[0]
+        if (field === 'email' || field === 'password') {
+          nextErrors[field] = issue.message
+        }
+      })
+      setFieldErrors(nextErrors)
+      return
+    }
+
+    setFieldErrors({})
+  }
 
   return (
     <section className="login-layout">
@@ -72,25 +100,48 @@ export function SignInPage() {
 
           <p className="divider">or continue with email</p>
 
-          <form className="auth-form">
-            <label htmlFor="email">Email address</label>
-            <div className="input-wrap">
+          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <label htmlFor="email">
+              Email address <span className="required-asterisk">*</span>
+            </label>
+            <div className={fieldErrors.email ? 'input-wrap input-wrap-error' : 'input-wrap'}>
               <IoMailOutline className="input-icon" />
-              <input id="email" type="email" placeholder="you@example.com" />
+              <input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (fieldErrors.email) {
+                    setFieldErrors((prev) => ({ ...prev, email: undefined }))
+                  }
+                }}
+              />
             </div>
+            {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
 
             <div className="label-row">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">
+                Password <span className="required-asterisk">*</span>
+              </label>
               <Link to="/" className="small-link">
                 Forgot password?
               </Link>
             </div>
-            <div className="input-wrap">
+            <div className={fieldErrors.password ? 'input-wrap input-wrap-error' : 'input-wrap'}>
               <IoLockClosedOutline className="input-icon" />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  if (fieldErrors.password) {
+                    setFieldErrors((prev) => ({ ...prev, password: undefined }))
+                  }
+                }}
               />
               <button
                 type="button"
@@ -105,6 +156,7 @@ export function SignInPage() {
                 )}
               </button>
             </div>
+            {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
 
             <label className="checkbox-row" htmlFor="remember">
               <input id="remember" type="checkbox" />

@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
 import {
   IoBriefcaseOutline,
   IoGiftOutline,
@@ -50,6 +51,7 @@ const navItems = ['Onboarding', 'Dashboard', 'Surveys', 'Earnings']
 
 export function OnboardingPage() {
   const navigate = useNavigate()
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   const completionPercent = 0
   const activeIndex = 0
@@ -70,6 +72,23 @@ export function OnboardingPage() {
       navigate(step.path)
     }
   }
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return
+
+    document.body.style.overflow = 'hidden'
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [mobileSidebarOpen])
 
   return (
     <section className="onboarding-shell">
@@ -103,6 +122,14 @@ export function OnboardingPage() {
 
       <div className="onboarding-main">
         <header className="onboarding-topbar">
+          <button
+            type="button"
+            className="profile-mobile-menu-btn"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Open dashboard menu"
+          >
+            <HiOutlineMenu />
+          </button>
           <h2>Account Verification</h2>
           <span className="onboarding-chip">Action Required</span>
         </header>
@@ -201,6 +228,59 @@ export function OnboardingPage() {
           </article>
         </div>
       </div>
+
+      <div
+        className={mobileSidebarOpen ? 'onboarding-mobile-overlay open' : 'onboarding-mobile-overlay'}
+        onClick={() => setMobileSidebarOpen(false)}
+        role="button"
+        tabIndex={0}
+        aria-label="Close onboarding menu"
+      />
+
+      <aside className={mobileSidebarOpen ? 'onboarding-mobile-sidebar open' : 'onboarding-mobile-sidebar'}>
+        <div className="onboarding-mobile-sidebar-head">
+          <span className="brand-text">Dashboard Menu</span>
+          <button
+            type="button"
+            className="onboarding-mobile-close-btn"
+            onClick={() => setMobileSidebarOpen(false)}
+            aria-label="Close dashboard menu"
+          >
+            <HiOutlineX />
+          </button>
+        </div>
+
+        <nav className="onboarding-mobile-nav">
+          <NavLink
+            to="/dashboard/onboarding"
+            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            Onboarding
+          </NavLink>
+          <NavLink
+            to="/dashboard/earnings"
+            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/dashboard/surveys"
+            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            Surveys
+          </NavLink>
+          <NavLink
+            to="/dashboard/earnings"
+            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            Earnings
+          </NavLink>
+        </nav>
+      </aside>
     </section>
   )
 }
