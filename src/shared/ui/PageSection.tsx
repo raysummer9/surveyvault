@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { SidebarMemberCard } from './SidebarMemberCard'
 
 interface PageSectionProps {
   title: string
@@ -13,11 +14,11 @@ const dashboardNavItems = [
   { to: '/dashboard/surveys', label: 'Surveys' },
   { to: '/dashboard/workforce/join', label: 'Workforce' },
   { to: '/dashboard/onboarding', label: 'Onboarding' },
+  { to: '/admin/onboarding-review', label: 'Admin Reviews' },
   { to: '/admin/payment-settings', label: 'Admin Settings' },
 ]
 
 export function PageSection({ title, description, children }: PageSectionProps) {
-  const location = useLocation()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
@@ -39,10 +40,6 @@ export function PageSection({ title, description, children }: PageSectionProps) 
       return () => window.removeEventListener('keydown', handleEscape)
     }
   }, [mobileSidebarOpen])
-
-  useEffect(() => {
-    setMobileSidebarOpen(false)
-  }, [location.pathname])
 
   return (
     <section className="dashboard-shell">
@@ -66,6 +63,8 @@ export function PageSection({ title, description, children }: PageSectionProps) 
             </NavLink>
           ))}
         </nav>
+
+        <SidebarMemberCard />
       </aside>
 
       <div className="dashboard-content-wrap">
@@ -125,6 +124,7 @@ export function PageSection({ title, description, children }: PageSectionProps) 
             </NavLink>
           ))}
         </nav>
+        <SidebarMemberCard onAfterLogout={() => setMobileSidebarOpen(false)} />
       </aside>
     </section>
   )

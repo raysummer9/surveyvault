@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { type ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
 import {
@@ -20,6 +20,15 @@ import {
 import { z } from 'zod'
 
 import { CountrySelectModal } from './CountrySelectModal'
+import { useAuth } from '../auth/AuthContext'
+import { saveOnboardingStep } from './onboardingApi'
+import {
+  getOnboardingFileSignedUrl,
+  type UploadedOnboardingFile,
+  uploadOnboardingFile,
+} from './onboardingStorage'
+import { formatLastSavedLabel } from './onboardingTime'
+import { SidebarMemberCard } from '../../shared/ui/SidebarMemberCard'
 
 type CountryField = 'nationality' | 'country'
 
@@ -66,6 +75,7 @@ function formatDateForInput(date: Date) {
 
 export function CompleteProfilePage() {
   const navigate = useNavigate()
+  const { user, profile, onboarding, refreshUserState } = useAuth()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -75,7 +85,14 @@ export function CompleteProfilePage() {
   const [nationality, setNationality] = useState('')
   const [country, setCountry] = useState('')
   const [countryField, setCountryField] = useState<CountryField | null>(null)
+  const profilePhotoInputRef = useRef<HTMLInputElement | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null)
+  const [existingProfilePhotoMetadata, setExistingProfilePhotoMetadata] = useState<UploadedOnboardingFile | null>(null)
+  const [profilePhotoPreviewUrl, setProfilePhotoPreviewUrl] = useState('')
+  const [existingProfilePhotoUrl, setExistingProfilePhotoUrl] = useState('')
+  const [existingProfilePhotoName, setExistingProfilePhotoName] = useState('')
+  const [photoError, setPhotoError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string
     lastName?: string
@@ -86,16 +103,25 @@ export function CompleteProfilePage() {
     nationality?: string
     country?: string
   }>({})
+  const [submitError, setSubmitError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const isCountryModalOpen = countryField !== null
   const calculatedAge = calculateAgeFromDateOfBirth(birthDate)
   const maxBirthDate = formatDateForInput(new Date())
+  const userId = user?.id ?? null
+  const verifiedEmail = (profile?.email ?? user?.email ?? email).trim()
+  const hasSavedProfileData =
+    Boolean(onboarding?.profile_data && typeof onboarding?.profile_data === 'object') &&
+    Object.keys(onboarding?.profile_data ?? {}).length > 0
+  const lastSavedLabel = formatLastSavedLabel(onboarding?.updated_at)
 
-  const handleSaveContinue = () => {
+  const handleSaveContinue = async () => {
+    setSubmitError('')
     const parsed = completeProfileSchema.safeParse({
       firstName,
       lastName,
-      email,
+      email: verifiedEmail,
       phoneNumber,
       birthDate,
       gender,
@@ -136,11 +162,73 @@ export function CompleteProfilePage() {
     }
 
     setFieldErrors({})
-    navigate('/dashboard/onboarding')
+    if (!user) {
+      setSubmitError('You must be signed in to continue.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const uploadedProfilePhoto = profilePhotoFile
+        ? await uploadOnboardingFile({
+            userId: user.id,
+            step: 'profile',
+            fileKey: 'profile-photo',
+            file: profilePhotoFile,
+          })
+        : existingProfilePhotoMetadata
+
+      await saveOnboardingStep(user.id, 'profile', {
+        firstName,
+        lastName,
+        email: verifiedEmail,
+        phoneNumber,
+        birthDate,
+        age: calculatedAge,
+        gender,
+        nationality,
+        country,
+        profilePhotoFile: uploadedProfilePhoto,
+      })
+      await refreshUserState()
+      navigate('/dashboard/onboarding/skills')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to save profile data.'
+      setSubmitError(message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const openCountryModal = (field: CountryField) => {
     setCountryField(field)
+  }
+
+  const openProfilePhotoPicker = () => {
+    profilePhotoInputRef.current?.click()
+  }
+
+  const handleProfilePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0]
+    if (!selectedFile) return
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp']
+    const maxFileSizeInBytes = 5 * 1024 * 1024
+
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setPhotoError('Please upload a PNG, JPG, or WEBP image.')
+      event.target.value = ''
+      return
+    }
+
+    if (selectedFile.size > maxFileSizeInBytes) {
+      setPhotoError('Profile photo must be 5MB or smaller.')
+      event.target.value = ''
+      return
+    }
+
+    setPhotoError('')
+    setProfilePhotoFile(selectedFile)
   }
 
   const closeCountryModal = () => {
@@ -164,6 +252,81 @@ export function CompleteProfilePage() {
   }
 
   useEffect(() => {
+    if (!userId) return
+
+    const profileData = onboarding?.profile_data
+    const profileRecord = profileData && typeof profileData === 'object' ? profileData : null
+    const readString = (key: string) => {
+      if (!profileRecord) return ''
+      const value = profileRecord[key]
+      return typeof value === 'string' ? value : ''
+    }
+
+    const fallbackFirstName = profile?.first_name ?? ''
+    const fallbackLastName = profile?.last_name ?? ''
+    const fallbackEmail = profile?.email ?? user?.email ?? ''
+
+    setFirstName((prev) => (prev.trim() ? prev : readString('firstName') || fallbackFirstName))
+    setLastName((prev) => (prev.trim() ? prev : readString('lastName') || fallbackLastName))
+    setEmail((prev) => (prev.trim() ? prev : readString('email') || fallbackEmail))
+    setPhoneNumber((prev) => (prev.trim() ? prev : readString('phoneNumber')))
+    setBirthDate((prev) => (prev.trim() ? prev : readString('birthDate')))
+    setGender((prev) => (prev.trim() ? prev : readString('gender') || 'Male'))
+    setNationality((prev) => (prev.trim() ? prev : readString('nationality')))
+    setCountry((prev) => (prev.trim() ? prev : readString('country')))
+
+  }, [userId, user?.email, profile?.first_name, profile?.last_name, profile?.email, onboarding?.profile_data])
+
+  useEffect(() => {
+    const profileData = onboarding?.profile_data
+    const profileRecord = profileData && typeof profileData === 'object' ? profileData : null
+    const rawProfilePhoto = profileRecord?.profilePhotoFile
+
+    const profilePhotoMetadata =
+      rawProfilePhoto &&
+      typeof rawProfilePhoto === 'object' &&
+      'path' in rawProfilePhoto &&
+      typeof rawProfilePhoto.path === 'string'
+        ? (rawProfilePhoto as UploadedOnboardingFile)
+        : null
+
+    if (!profilePhotoMetadata || profilePhotoFile) {
+      if (!profilePhotoMetadata) {
+        setExistingProfilePhotoMetadata(null)
+        setExistingProfilePhotoName('')
+        setExistingProfilePhotoUrl('')
+      }
+      return
+    }
+
+    let cancelled = false
+    setExistingProfilePhotoMetadata(profilePhotoMetadata)
+
+    const loadProfilePhoto = async () => {
+      try {
+        const signedUrl = await getOnboardingFileSignedUrl({
+          bucket: profilePhotoMetadata.bucket,
+          path: profilePhotoMetadata.path,
+        })
+        if (cancelled) return
+        setExistingProfilePhotoName(profilePhotoMetadata.originalName ?? '')
+        setExistingProfilePhotoUrl(signedUrl)
+      } catch (error) {
+        if (cancelled) return
+        console.error('[CompleteProfilePage] Failed to load saved profile photo', error)
+        setExistingProfilePhotoName('')
+        setExistingProfilePhotoUrl('')
+      }
+    }
+
+    void loadProfilePhoto()
+
+    return () => {
+      cancelled = true
+    }
+  }, [onboarding?.profile_data, profilePhotoFile])
+
+  useEffect(() => {
     if (!mobileSidebarOpen) return
 
     document.body.style.overflow = 'hidden'
@@ -179,6 +342,20 @@ export function CompleteProfilePage() {
       window.removeEventListener('keydown', handleEscape)
     }
   }, [mobileSidebarOpen])
+
+  useEffect(() => {
+    if (!profilePhotoFile) {
+      setProfilePhotoPreviewUrl('')
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(profilePhotoFile)
+    setProfilePhotoPreviewUrl(objectUrl)
+
+    return () => {
+      URL.revokeObjectURL(objectUrl)
+    }
+  }, [profilePhotoFile])
 
   return (
     <section className="onboarding-shell">
@@ -223,13 +400,7 @@ export function CompleteProfilePage() {
           </button>
         </div>
 
-        <div className="onboarding-member">
-          <IoPersonOutline />
-          <div>
-            <p>New Member</p>
-            <small>Setup Pending</small>
-          </div>
-        </div>
+        <SidebarMemberCard />
       </aside>
 
       <div className="onboarding-main">
@@ -244,7 +415,7 @@ export function CompleteProfilePage() {
           </button>
           <div>
             <h2>Complete Profile</h2>
-            <p>Step 1 of 4 - Bio Data</p>
+            <p>Step 1 of 4 — Bio Data</p>
           </div>
           <div className="profile-topbar-chips">
             <span className="profile-chip step">
@@ -297,6 +468,12 @@ export function CompleteProfilePage() {
                 <p>Fill in your personal information accurately</p>
               </div>
             </header>
+            {hasSavedProfileData && (
+              <p className="onboarding-saved-hint">
+                Saved from previous submission. You can update fields before continuing.
+                {lastSavedLabel ? ` ${lastSavedLabel}.` : ''}
+              </p>
+            )}
 
             <form
               className="auth-form profile-form"
@@ -311,20 +488,67 @@ export function CompleteProfilePage() {
               </p>
               <div className="profile-upload-row">
                 <div className="profile-avatar-upload">
-                  <IoPersonOutline />
-                  <button type="button" className="avatar-camera-btn">
+                  {profilePhotoPreviewUrl || existingProfilePhotoUrl ? (
+                    <img
+                      src={profilePhotoPreviewUrl || existingProfilePhotoUrl}
+                      alt="Profile preview"
+                      className="profile-avatar-preview"
+                    />
+                  ) : (
+                    <IoPersonOutline />
+                  )}
+                  <button type="button" className="avatar-camera-btn" onClick={openProfilePhotoPicker}>
                     <IoCameraOutline />
                   </button>
                 </div>
-                <div className="profile-dropzone">
+                <div
+                  className="profile-dropzone"
+                  role="button"
+                  tabIndex={0}
+                  onClick={openProfilePhotoPicker}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      openProfilePhotoPicker()
+                    }
+                  }}
+                >
                   <IoCloudUploadOutline />
-                  <p>Click to upload or drag &amp; drop</p>
-                  <small>PNG, JPG or WEBP · Max 5MB · Min 200x200px</small>
-                  <button type="button" className="profile-browse-btn">
+                  <p>
+                    {profilePhotoFile
+                      ? 'Profile photo selected'
+                      : existingProfilePhotoUrl
+                        ? 'Current profile photo loaded'
+                        : 'Click to upload or drag &amp; drop'}
+                  </p>
+                  <small>
+                    {profilePhotoFile
+                      ? `${profilePhotoFile.name} · ${Math.max(0.01, profilePhotoFile.size / (1024 * 1024)).toFixed(2)} MB`
+                      : existingProfilePhotoName
+                        ? `${existingProfilePhotoName} · saved`
+                      : 'PNG, JPG or WEBP · Max 5MB · Min 200x200px'}
+                  </small>
+                  <button
+                    type="button"
+                    className="profile-browse-btn"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      openProfilePhotoPicker()
+                    }}
+                  >
                     Browse Files
                   </button>
+                  <input
+                    ref={profilePhotoInputRef}
+                    id="profile-photo-upload"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    hidden
+                    onChange={handleProfilePhotoChange}
+                  />
                 </div>
               </div>
+              {photoError && <p className="field-error">{photoError}</p>}
 
               <p className="section-label">Personal Information</p>
 
@@ -375,19 +599,19 @@ export function CompleteProfilePage() {
                 <div>
                   <label htmlFor="email">
                     Email Address <span className="required-asterisk">*</span>
+                    <span className="profile-verified-badge">
+                      <IoCheckmarkCircleOutline />
+                      Verified
+                    </span>
                   </label>
                   <div className={fieldErrors.email ? 'input-wrap input-wrap-error' : 'input-wrap'}>
                     <IoMailOutline className="input-icon" />
                     <input
                       id="email"
                       type="email"
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value)
-                        if (fieldErrors.email) {
-                          setFieldErrors((prev) => ({ ...prev, email: undefined }))
-                        }
-                      }}
+                      value={verifiedEmail}
+                      readOnly
+                      disabled
                       placeholder="john@example.com"
                     />
                   </div>
@@ -542,10 +766,11 @@ export function CompleteProfilePage() {
                   Save Draft
                 </button>
                 <p className="profile-next-step">Next: Skill Verification</p>
-                <button type="submit" className="step-action">
-                  Save & Continue <IoArrowForward />
+                <button type="submit" className="step-action" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save & Continue'} <IoArrowForward />
                 </button>
               </div>
+              {submitError && <p className="field-error">{submitError}</p>}
             </form>
           </article>
         </div>

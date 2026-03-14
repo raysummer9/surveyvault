@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight } from 'react-icons/fi'
@@ -15,6 +15,7 @@ import {
 } from 'react-icons/io5'
 import { MdAttachMoney, MdGroups, MdOutlineDescription } from 'react-icons/md'
 import { z } from 'zod'
+import { useAuth } from '../auth/AuthContext'
 
 const registerSchema = z
   .object({
@@ -68,6 +69,8 @@ const benefits = [
 ]
 
 export function RegisterPage() {
+  const navigate = useNavigate()
+  const { signUp } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [firstName, setFirstName] = useState('')
@@ -84,12 +87,15 @@ export function RegisterPage() {
     confirmPassword?: string
     terms?: string
   }>({})
+  const [submitError, setSubmitError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setSubmitError('')
     const parsed = registerSchema.safeParse({
       firstName,
       lastName,
@@ -128,6 +134,21 @@ export function RegisterPage() {
     }
 
     setFieldErrors({})
+    setSubmitting(true)
+    try {
+      await signUp({
+        firstName: parsed.data.firstName,
+        lastName: parsed.data.lastName,
+        email: parsed.data.email,
+        password: parsed.data.password,
+      })
+      navigate('/sign-in')
+    } catch (registerError) {
+      const message = registerError instanceof Error ? registerError.message : 'Unable to create account.'
+      setSubmitError(message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -350,9 +371,10 @@ export function RegisterPage() {
               </span>
             </label>
             {fieldErrors.terms && <p className="field-error">{fieldErrors.terms}</p>}
+            {submitError && <p className="field-error">{submitError}</p>}
 
-            <button className="auth-submit" type="submit">
-              Register for free
+            <button className="auth-submit" type="submit" disabled={submitting}>
+              {submitting ? 'Creating account...' : 'Register for free'}
             </button>
           </form>
 

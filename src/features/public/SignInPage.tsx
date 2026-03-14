@@ -1,25 +1,33 @@
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight, FiUser } from 'react-icons/fi'
 import { HiOutlineLightningBolt } from 'react-icons/hi'
 import { IoEyeOffOutline, IoEyeOutline, IoLockClosedOutline, IoMailOutline } from 'react-icons/io5'
 import { z } from 'zod'
+import { useAuth } from '../auth/AuthContext'
 
 const signInSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
   password: z.string().min(1, 'Password is required.'),
 })
 
+const SIGN_IN_TIMEOUT_MS = 15000
+
 export function SignInPage() {
+  const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
+  const [submitError, setSubmitError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setSubmitError('')
     const parsed = signInSchema.safeParse({ email, password })
 
     if (!parsed.success) {
@@ -35,6 +43,23 @@ export function SignInPage() {
     }
 
     setFieldErrors({})
+    setSubmitting(true)
+    try {
+      await Promise.race([
+        signIn(parsed.data.email, parsed.data.password),
+        new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error('Sign in timed out. Please try again.')), SIGN_IN_TIMEOUT_MS)
+        }),
+      ])
+      // Auth session is already established by Supabase after sign-in.
+      // Profile/onboarding hydration runs in AuthProvider; don't block navigation on it.
+      navigate('/dashboard/onboarding')
+    } catch (signInError) {
+      const message = signInError instanceof Error ? signInError.message : 'Unable to sign in.'
+      setSubmitError(message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -125,7 +150,7 @@ export function SignInPage() {
               <label htmlFor="password">
                 Password <span className="required-asterisk">*</span>
               </label>
-              <Link to="/" className="small-link">
+              <Link to="/forgot-password" className="small-link">
                 Forgot password?
               </Link>
             </div>
@@ -157,15 +182,16 @@ export function SignInPage() {
               </button>
             </div>
             {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
+            {submitError && <p className="field-error">{submitError}</p>}
 
             <label className="checkbox-row" htmlFor="remember">
               <input id="remember" type="checkbox" />
               <span>Remember me for 30 days</span>
             </label>
 
-            <button className="auth-submit" type="submit">
+            <button className="auth-submit" type="submit" disabled={submitting}>
               <FiUser />
-              Sign In to SurveyVault
+              {submitting ? 'Signing in...' : 'Sign In to SurveyVault'}
             </button>
           </form>
 
