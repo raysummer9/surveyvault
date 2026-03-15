@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiArrowRight,
@@ -123,7 +124,118 @@ const featuredSurveys = [
   },
 ] as const
 
+const stats = [
+  { value: '50K+', label: 'Active Members' },
+  { value: '$2.4M', label: 'Total Paid Out' },
+  { value: '1,200+', label: 'Surveys Monthly' },
+  { value: '4.9★', label: 'Average Rating' },
+] as const
+
+const testimonials = [
+  {
+    quote:
+      "I've been using SurveyVault for 6 months and have earned over $800. The surveys are relevant and the payouts are fast. Highly recommend to anyone looking for extra income.",
+    name: 'Sarah Mitchell',
+    tier: 'Gold Member',
+    earned: '$847 earned',
+    initials: 'SM',
+  },
+  {
+    quote:
+      "The platform is incredibly easy to use. I complete surveys during my lunch break and have already withdrawn $200 this month. The referral program is a great bonus too!",
+    name: 'James Kowalski',
+    tier: 'Platinum Member',
+    earned: '$1,240 earned',
+    initials: 'JK',
+  },
+  {
+    quote:
+      "As a market research professional, I appreciate the quality of surveys here. The topics are diverse and interesting. I've earned enough to cover my monthly subscriptions easily.",
+    name: 'Priya Rajan',
+    tier: 'Silver Member',
+    earned: '$412 earned',
+    initials: 'PR',
+  },
+  {
+    quote:
+      "Best survey site I've tried. No spam, no gimmicks—just straightforward surveys and real payouts. I've made $300 in my first two months.",
+    name: 'Marcus Chen',
+    tier: 'Silver Member',
+    earned: '$312 earned',
+    initials: 'MC',
+  },
+  {
+    quote:
+      "The mobile app makes it so convenient. I earn during my commute. Already hit my first $100 withdrawal and the process was seamless.",
+    name: 'Emily Torres',
+    tier: 'Gold Member',
+    earned: '$589 earned',
+    initials: 'ET',
+  },
+  {
+    quote:
+      "SurveyVault's tier system motivated me to stay consistent. Now I'm Platinum and the higher-paying surveys are worth the effort.",
+    name: 'David Okonkwo',
+    tier: 'Platinum Member',
+    earned: '$1,890 earned',
+    initials: 'DO',
+  },
+  {
+    quote:
+      "As a stay-at-home parent, this has been a game-changer. Flexible hours and legitimate earnings. So grateful I found this platform.",
+    name: 'Rachel Foster',
+    tier: 'Gold Member',
+    earned: '$720 earned',
+    initials: 'RF',
+  },
+  {
+    quote:
+      "I was skeptical at first, but the reviews were right. Fast payouts, great variety of surveys, and the support team actually responds.",
+    name: 'Alex Kim',
+    tier: 'Silver Member',
+    earned: '$245 earned',
+    initials: 'AK',
+  },
+  {
+    quote:
+      "Referred three friends and we're all earning. The 10% bonus adds up. SurveyVault has become my go-to side hustle.",
+    name: 'Jordan Williams',
+    tier: 'Platinum Member',
+    earned: '$2,100 earned',
+    initials: 'JW',
+  },
+] as const
+
+const TESTIMONIALS_PER_VIEW_DESKTOP = 3
+const MOBILE_BREAKPOINT = 768
+
 export function LandingPage() {
+  const [firstVisibleIndex, setFirstVisibleIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`)
+    const handler = () => setIsMobile(mq.matches)
+    handler()
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    const step = isMobile ? 1 : TESTIMONIALS_PER_VIEW_DESKTOP
+    const maxIndex = isMobile ? testimonials.length - 1 : testimonials.length - TESTIMONIALS_PER_VIEW_DESKTOP
+    const id = setInterval(() => {
+      setFirstVisibleIndex((prev) => (prev >= maxIndex ? 0 : prev + step))
+    }, 5000)
+    return () => clearInterval(id)
+  }, [isMobile])
+
+  const dotCount = isMobile ? testimonials.length : Math.ceil(testimonials.length / TESTIMONIALS_PER_VIEW_DESKTOP)
+  const activeDotIndex = isMobile ? firstVisibleIndex : Math.floor(firstVisibleIndex / TESTIMONIALS_PER_VIEW_DESKTOP)
+  const goToSlide = (dotIndex: number) => {
+    setFirstVisibleIndex(isMobile ? dotIndex : dotIndex * TESTIMONIALS_PER_VIEW_DESKTOP)
+  }
+
   return (
     <PublicPageLayout className="landing-page">
       <section className="landing-hero">
@@ -292,6 +404,66 @@ export function LandingPage() {
               Join Free <FiArrowRight />
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="landing-stats">
+        <div className="landing-stats-inner">
+          {stats.map((stat) => (
+            <div key={stat.label} className="landing-stat">
+              <span className="landing-stat-value">{stat.value}</span>
+              <span className="landing-stat-label">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-testimonials">
+        <span className="landing-testimonials-badge">Testimonials</span>
+        <h2 className="landing-testimonials-title">What our experts say</h2>
+        <p className="landing-testimonials-subtitle">
+          Real stories from real members who are earning with SurveyVault.
+        </p>
+        <div className="landing-testimonials-slider">
+          <div
+            className="landing-testimonials-track"
+            style={{
+              transform: `translateX(-${firstVisibleIndex * (100 / testimonials.length)}%)`,
+            }}
+          >
+            {testimonials.map((t) => (
+              <div key={t.name} className="landing-testimonial-slide">
+                <div className="landing-testimonial-card">
+                  <div className="landing-testimonial-stars" aria-hidden>
+                    ★★★★★
+                  </div>
+                  <blockquote className="landing-testimonial-quote">{t.quote}</blockquote>
+                  <div className="landing-testimonial-author">
+                    <div className="landing-testimonial-avatar">{t.initials}</div>
+                    <div className="landing-testimonial-info">
+                      <span className="landing-testimonial-name">{t.name}</span>
+                      <span className="landing-testimonial-meta">
+                        {t.tier} · {t.earned}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="landing-testimonials-dots" role="tablist" aria-label="Testimonial slide navigation">
+          {Array.from({ length: dotCount }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              role="tab"
+              aria-selected={i === activeDotIndex}
+              aria-label={`View slide ${i + 1}`}
+              className={`landing-testimonial-dot ${i === activeDotIndex ? 'landing-testimonial-dot-active' : ''}`}
+              onClick={() => goToSlide(i)}
+            />
+          ))}
         </div>
       </section>
 
