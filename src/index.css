@@ -234,6 +234,782 @@ body {
   min-height: calc(100vh - 56px);
 }
 
+.public-page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.public-page-header {
+  margin-bottom: 32px;
+}
+
+.public-page-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.public-page-desc {
+  margin: 0;
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.public-page-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+/* Landing page – full width hero */
+.landing-page {
+  max-width: none;
+  padding: 0;
+}
+
+.public-page-content.landing-page {
+  max-width: none;
+}
+
+/* Landing hero – Figma spec (two-column: left content, right earnings card) */
+.landing-hero {
+  padding: 48px 24px 64px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  border-bottom: 1px solid #dbeafe;
+}
+
+.landing-hero-inner {
+  max-width: 1216px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 584px);
+  gap: 48px;
+  align-items: center;
+}
+
+.landing-hero-left {
+  text-align: left;
+}
+
+.landing-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 24px;
+}
+
+.landing-hero-badge-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  background: #3b82f6;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.landing-hero-title {
+  margin: 0 0 16px;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.landing-hero-accent {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-hero-subtitle {
+  margin: 0 0 32px;
+  font-size: 18px;
+  line-height: 1.625;
+  color: #475569;
+  max-width: 512px;
+}
+
+.landing-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.landing-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  height: 54px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.landing-cta-primary:hover {
+  opacity: 0.95;
+}
+
+.landing-cta-primary svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.landing-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  height: 54px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #334155;
+  text-decoration: none;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.landing-cta-secondary:hover {
+  background: #f8fafc;
+}
+
+.landing-hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-hero-avatars {
+  display: flex;
+}
+
+.landing-hero-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  margin-left: -8px;
+}
+
+.landing-hero-avatar:first-child {
+  margin-left: 0;
+}
+
+.landing-hero-stars {
+  color: #facc15;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.landing-hero-trust-text {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Earnings card – Figma spec */
+.landing-hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-hero-earnings-card {
+  width: 100%;
+  max-width: 584px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 32px;
+  box-shadow:
+    0 4px 6px -4px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.landing-hero-earnings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.landing-hero-earnings-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.landing-hero-earnings-today {
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  background: #f0fdf4;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.landing-hero-earnings-amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.landing-hero-earnings-label {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.landing-hero-earnings-progress {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.landing-hero-earnings-progress-fill {
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 9999px;
+}
+
+.landing-hero-earnings-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.landing-hero-earnings-stat {
+  text-align: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.landing-hero-earnings-stat-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.landing-hero-earnings-stat-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.landing-hero-earnings-stat-tier {
+  background: #f5f3ff;
+}
+
+.landing-hero-earnings-stat-tier .landing-hero-earnings-stat-value {
+  color: #7c3aed;
+}
+
+@media (max-width: 900px) {
+  .landing-hero-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .landing-hero-left {
+    text-align: center;
+  }
+
+  .landing-hero-badge {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .landing-hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .landing-hero-actions {
+    justify-content: center;
+  }
+
+  .landing-hero-trust {
+    justify-content: center;
+  }
+
+  .landing-hero-avatars {
+    justify-content: center;
+  }
+
+  .landing-hero-avatar {
+    margin-left: -8px;
+  }
+
+  .landing-hero-avatar:first-child {
+    margin-left: 0;
+  }
+}
+
+/* Trusted by section */
+.landing-trusted-by {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.landing-trusted-by-title {
+  margin: 0 0 24px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.landing-trusted-by-logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px 48px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.landing-trusted-by-logo {
+  font-size: 18px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Benefits section – Figma spec */
+.landing-benefits {
+  padding: 64px 24px;
+  background: #eff6ff;
+  text-align: center;
+}
+
+.landing-benefits-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #dbeafe;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 24px;
+}
+
+.landing-benefits-title {
+  margin: 0 0 12px;
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.landing-benefits-subtitle {
+  margin: 0 0 40px;
+  font-size: 16px;
+  color: #475569;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  list-style: none;
+  padding: 0;
+}
+
+.landing-benefit-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 24px;
+  text-align: left;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  color: #fff;
+  overflow: hidden;
+}
+
+.landing-benefit-card::before {
+  content: '';
+  position: absolute;
+  top: -32px;
+  right: -32px;
+  left: auto;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.landing-benefit-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.landing-benefit-icon svg {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.landing-benefit-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.landing-benefit-desc {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+.landing-benefit-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.landing-benefit-tag svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 900px) {
+  .landing-benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Featured surveys section – Figma spec */
+.landing-featured {
+  padding: 64px 24px;
+  background: #fff;
+}
+
+.landing-featured-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto 32px;
+}
+
+.landing-featured-header-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.landing-featured-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.landing-featured-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.landing-featured-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.landing-featured-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.landing-featured-view-all:hover {
+  background: #f8fafc;
+}
+
+.landing-featured-view-all svg {
+  width: 14px;
+  height: 14px;
+}
+
+.landing-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-featured-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.landing-featured-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.landing-featured-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.landing-featured-card-reward {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.landing-featured-card-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+  padding-right: 48px;
+}
+
+.landing-featured-card-desc {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.landing-featured-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.landing-featured-card-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.landing-featured-card-duration svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.landing-featured-card-category {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.landing-featured-card-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.landing-featured-card-start:hover {
+  text-decoration: underline;
+}
+
+.landing-featured-card-start svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* CTA card */
+.landing-featured-card-cta {
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  border: none;
+  color: #fff;
+}
+
+.landing-featured-card-cta-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.landing-featured-card-cta-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+}
+
+.landing-featured-card-cta-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.landing-featured-card-cta-desc {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.landing-featured-card-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.landing-featured-card-cta-btn:hover {
+  background: #f8fafc;
+}
+
+.landing-featured-card-cta-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 900px) {
+  .landing-featured-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-featured-header {
+    flex-direction: column;
+  }
+
+  .landing-featured-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Landing CTA */
+.landing-cta {
+  padding: 48px 24px;
+  text-align: center;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  margin: 0 24px 32px;
+}
+
+.landing-section-title {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.landing-cta-text {
+  margin: 0 0 24px;
+  font-size: 16px;
+  color: #475569;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .public-content.no-navbar {
   min-height: 100vh;
 }

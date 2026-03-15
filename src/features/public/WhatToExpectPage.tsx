@@ -1,4 +1,4 @@
-import { PageSection } from '../../shared/ui/PageSection'
+import { PublicPageLayout } from '../../shared/ui/PublicPageLayout'
 
 const expectationPoints = [
   'Complete onboarding and identity checks.',
@@ -9,15 +9,20 @@ const expectationPoints = [
 
 export function WhatToExpectPage() {
   return (
-    <PageSection
-      title="What to expect"
-      description="Public process overview placeholder for new users."
-    >
-      <ul className="list">
-        {expectationPoints.map((point) => (
-          <li key={point}>{point}</li>
-        ))}
-      </ul>
-    </PageSection>
+    <PublicPageLayout>
+      <header className="public-page-header">
+        <h1 className="public-page-title">What to expect</h1>
+        <p className="public-page-desc">
+          Our process for new members joining the SurveyVault workforce.
+        </p>
+      </header>
+      <div className="public-page-panel">
+        <ul className="list">
+          {expectationPoints.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
+      </div>
+    </PublicPageLayout>
   )
 }
