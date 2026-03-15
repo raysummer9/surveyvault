@@ -7,9 +7,10 @@ import { isAdminApproved, hasJoinedWorkforce } from './types'
  * onboarding/approval/joined state. Used as the dashboard index and after sign-in.
  */
 export function PostLoginRedirect() {
-  const { loading, profile } = useAuth()
+  const { loading, user, profile } = useAuth()
 
-  if (loading) {
+  // Wait for profile to load when authenticated (loadUserState runs async after auth change)
+  if (loading || (user && profile === null)) {
     return <section style={{ padding: '24px' }}>Loading...</section>
   }
 
