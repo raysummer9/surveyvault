@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import {
   canAccessOnboardingStep,
+  isAdminApproved,
+  isOnboardingRejected,
   isProfileMarkedOnboardingComplete,
   isOnboardingComplete,
   isWorkforceApproved,
@@ -40,6 +42,13 @@ export function RequireAuth({ children }: GuardProps) {
 export function RequireOnboardingStep({ children, step }: RequireOnboardingStepProps) {
   const { loading, onboarding, profile } = useAuth()
   if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (isAdminApproved(profile)) {
+    return <Navigate to="/dashboard" replace />
+  }
+  if (isOnboardingRejected(profile)) {
+    if (step === 'profile') return children
+    return <Navigate to="/dashboard/onboarding/profile" replace />
+  }
   if (isProfileMarkedOnboardingComplete(profile) || isOnboardingComplete(onboarding)) {
     return children
   }
@@ -54,6 +63,9 @@ export function RequireOnboardingStep({ children, step }: RequireOnboardingStepP
 export function RequireOnboardingComplete({ children }: GuardProps) {
   const { loading, onboarding, profile } = useAuth()
   if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (isOnboardingRejected(profile)) {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
   if (!isOnboardingComplete(onboarding) && !isProfileMarkedOnboardingComplete(profile)) {
     return <Navigate to="/dashboard/onboarding" replace />
   }

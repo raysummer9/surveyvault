@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { useNavigate } from 'react-router-dom'
 import {
   IoArrowBackOutline,
   IoArrowForward,
   IoCheckmarkCircle,
   IoCheckmarkCircleOutline,
   IoCheckmarkOutline,
-  IoLockClosedOutline,
   IoShieldCheckmarkOutline,
   IoTimeOutline,
 } from 'react-icons/io5'
@@ -16,7 +14,8 @@ import { RiBrainLine } from 'react-icons/ri'
 import { useAuth } from '../auth/AuthContext'
 import { saveOnboardingStep } from './onboardingApi'
 import { formatLastSavedLabel } from './onboardingTime'
-import { SidebarMemberCard } from '../../shared/ui/SidebarMemberCard'
+import { AppSidebarLayout } from '../../shared/ui/AppSidebarLayout'
+import { OnboardingTopbar } from '../../shared/ui/OnboardingTopbar'
 
 type QuestionOption = {
   id: string
@@ -259,13 +258,11 @@ const assessmentQuestions: AssessmentQuestion[] = [
   },
 ]
 
-const navItems = ['Onboarding', 'Dashboard', 'Surveys', 'Earnings']
 const questionCount = assessmentQuestions.length
 
 export function SkillVerificationPage() {
   const navigate = useNavigate()
   const { user, onboarding, refreshUserState } = useAuth()
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({})
   const [showQuestionValidation, setShowQuestionValidation] = useState(false)
@@ -284,23 +281,6 @@ export function SkillVerificationPage() {
 
   const isLastQuestion = currentQuestionIndex === assessmentQuestions.length - 1
   const currentChoice = selectedAnswers[currentQuestion.id]
-
-  useEffect(() => {
-    if (!mobileSidebarOpen) return
-
-    document.body.style.overflow = 'hidden'
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobileSidebarOpen(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleEscape)
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleEscape)
-    }
-  }, [mobileSidebarOpen])
 
   useEffect(() => {
     const skillsData = onboarding?.skills_data
@@ -379,72 +359,21 @@ export function SkillVerificationPage() {
   }
 
   return (
-    <section className="onboarding-shell">
-      <aside className="onboarding-sidebar">
-        <div className="onboarding-logo">
-          <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
-        </div>
-        <p className="onboarding-nav-title">Account Setup</p>
-        <nav className="onboarding-nav">
-          {navItems.map((item, idx) => {
-            const isActive = idx === 0
-            return (
-              <button key={item} className={isActive ? 'onboarding-nav-item active' : 'onboarding-nav-item'}>
-                <span>{item}</span>
-                {!isActive && <IoLockClosedOutline />}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="verification-steps-panel">
-          <p className="verification-steps-title">Verification Steps</p>
-          <button className="verification-step-item">
-            <span className="verification-step-count">✓</span>
-            Complete Profile
-          </button>
-          <button className="verification-step-item active">
-            <span className="verification-step-count">2</span>
-            Skill Verification
-          </button>
-          <button className="verification-step-item">
-            <span className="verification-step-count">3</span>
-            ID Verification
-          </button>
-          <button className="verification-step-item">
-            <span className="verification-step-count">4</span>
-            Address Verification
-          </button>
-        </div>
-
-        <SidebarMemberCard />
-      </aside>
-
-      <div className="onboarding-main">
-        <header className="onboarding-topbar profile-topbar">
-          <button
-            type="button"
-            className="profile-mobile-menu-btn"
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label="Open onboarding menu"
-          >
-            <HiOutlineMenu />
-          </button>
-          <div>
-            <h2>Skill Verification</h2>
-            <p>Step 2 of 4 — Skills Assessment</p>
-          </div>
-          <div className="profile-topbar-chips">
+    <AppSidebarLayout>
+      <OnboardingTopbar
+        title="Skill Verification"
+        subtitle="Step 2 of 4 — Skills Assessment"
+        chips={
+          <>
             <span className="profile-chip step">
               <IoCheckmarkCircleOutline />
               Step 2 of 4
             </span>
             <span className="profile-chip progress">In Progress</span>
-          </div>
-        </header>
-
-        <div className="onboarding-content profile-content">
+          </>
+        }
+      />
+      <div className="onboarding-content profile-content">
           <article className="profile-progress-card">
             <div className="profile-progress-head">
               <span>Account Verification Progress</span>
@@ -613,60 +542,6 @@ export function SkillVerificationPage() {
             </p>
           </div>
         </div>
-      </div>
-
-      <div
-        className={mobileSidebarOpen ? 'onboarding-mobile-overlay open' : 'onboarding-mobile-overlay'}
-        onClick={() => setMobileSidebarOpen(false)}
-        role="button"
-        tabIndex={0}
-        aria-label="Close onboarding menu"
-      />
-
-      <aside className={mobileSidebarOpen ? 'onboarding-mobile-sidebar open' : 'onboarding-mobile-sidebar'}>
-        <div className="onboarding-mobile-sidebar-head">
-          <span className="brand-text">Dashboard Menu</span>
-          <button
-            type="button"
-            className="onboarding-mobile-close-btn"
-            onClick={() => setMobileSidebarOpen(false)}
-            aria-label="Close onboarding menu"
-          >
-            <HiOutlineX />
-          </button>
-        </div>
-
-        <nav className="onboarding-mobile-nav">
-          <NavLink
-            to="/dashboard/onboarding"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Onboarding
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/dashboard/surveys"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Surveys
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Earnings
-          </NavLink>
-        </nav>
-      </aside>
-    </section>
+    </AppSidebarLayout>
   )
 }

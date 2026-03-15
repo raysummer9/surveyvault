@@ -1,6 +1,5 @@
 import { type ChangeEvent, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   IoArrowForward,
   IoCalendarOutline,
@@ -28,7 +27,8 @@ import {
   uploadOnboardingFile,
 } from './onboardingStorage'
 import { formatLastSavedLabel } from './onboardingTime'
-import { SidebarMemberCard } from '../../shared/ui/SidebarMemberCard'
+import { AppSidebarLayout } from '../../shared/ui/AppSidebarLayout'
+import { OnboardingTopbar } from '../../shared/ui/OnboardingTopbar'
 
 type CountryField = 'nationality' | 'country'
 
@@ -86,7 +86,6 @@ export function CompleteProfilePage() {
   const [country, setCountry] = useState('')
   const [countryField, setCountryField] = useState<CountryField | null>(null)
   const profilePhotoInputRef = useRef<HTMLInputElement | null>(null)
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null)
   const [existingProfilePhotoMetadata, setExistingProfilePhotoMetadata] = useState<UploadedOnboardingFile | null>(null)
   const [profilePhotoPreviewUrl, setProfilePhotoPreviewUrl] = useState('')
@@ -327,23 +326,6 @@ export function CompleteProfilePage() {
   }, [onboarding?.profile_data, profilePhotoFile])
 
   useEffect(() => {
-    if (!mobileSidebarOpen) return
-
-    document.body.style.overflow = 'hidden'
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobileSidebarOpen(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleEscape)
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleEscape)
-    }
-  }, [mobileSidebarOpen])
-
-  useEffect(() => {
     if (!profilePhotoFile) {
       setProfilePhotoPreviewUrl('')
       return
@@ -358,75 +340,22 @@ export function CompleteProfilePage() {
   }, [profilePhotoFile])
 
   return (
-    <section className="onboarding-shell">
-      <aside className="onboarding-sidebar">
-        <div className="onboarding-logo">
-          <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
-        </div>
-        <p className="onboarding-nav-title">Account Setup</p>
-        <nav className="onboarding-nav">
-          <button className="onboarding-nav-item active">
-            <span>Onboarding</span>
-          </button>
-          <button className="onboarding-nav-item">
-            <span>Dashboard</span>
-          </button>
-          <button className="onboarding-nav-item">
-            <span>Surveys</span>
-          </button>
-          <button className="onboarding-nav-item">
-            <span>Earnings</span>
-          </button>
-        </nav>
-
-        <div className="verification-steps-panel">
-          <p className="verification-steps-title">Verification Steps</p>
-          <button className="verification-step-item active">
-            <span className="verification-step-count">1</span>
-            Complete Profile
-          </button>
-          <button className="verification-step-item">
-            <span className="verification-step-count">2</span>
-            Skill Verification
-          </button>
-          <button className="verification-step-item">
-            <span className="verification-step-count">3</span>
-            ID Verification
-          </button>
-          <button className="verification-step-item">
-            <span className="verification-step-count">4</span>
-            Address Verification
-          </button>
-        </div>
-
-        <SidebarMemberCard />
-      </aside>
-
-      <div className="onboarding-main">
-        <header className="onboarding-topbar profile-topbar">
-          <button
-            type="button"
-            className="profile-mobile-menu-btn"
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label="Open onboarding menu"
-          >
-            <HiOutlineMenu />
-          </button>
-          <div>
-            <h2>Complete Profile</h2>
-            <p>Step 1 of 4 — Bio Data</p>
-          </div>
-          <div className="profile-topbar-chips">
+    <>
+    <AppSidebarLayout>
+      <OnboardingTopbar
+        title="Complete Profile"
+        subtitle="Step 1 of 4 — Bio Data"
+        chips={
+          <>
             <span className="profile-chip step">
               <IoCheckmarkCircleOutline />
               Step 1 of 4
             </span>
             <span className="profile-chip progress">In Progress</span>
-          </div>
-        </header>
-
-        <div className="onboarding-content profile-content">
+          </>
+        }
+      />
+      <div className="onboarding-content profile-content">
           <article className="profile-progress-card">
             <div className="profile-progress-head">
               <span>Account Verification Progress</span>
@@ -774,60 +703,7 @@ export function CompleteProfilePage() {
             </form>
           </article>
         </div>
-      </div>
-
-      <div
-        className={mobileSidebarOpen ? 'onboarding-mobile-overlay open' : 'onboarding-mobile-overlay'}
-        onClick={() => setMobileSidebarOpen(false)}
-        role="button"
-        tabIndex={0}
-        aria-label="Close onboarding menu"
-      />
-
-      <aside className={mobileSidebarOpen ? 'onboarding-mobile-sidebar open' : 'onboarding-mobile-sidebar'}>
-        <div className="onboarding-mobile-sidebar-head">
-          <span className="brand-text">Account Setup</span>
-          <button
-            type="button"
-            className="onboarding-mobile-close-btn"
-            onClick={() => setMobileSidebarOpen(false)}
-            aria-label="Close onboarding menu"
-          >
-            <HiOutlineX />
-          </button>
-        </div>
-
-        <nav className="onboarding-mobile-nav">
-          <NavLink
-            to="/dashboard/onboarding/profile"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Onboarding
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/dashboard/surveys"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Surveys
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Earnings
-          </NavLink>
-        </nav>
-      </aside>
+    </AppSidebarLayout>
 
       <CountrySelectModal
         isOpen={isCountryModalOpen}
@@ -836,6 +712,6 @@ export function CompleteProfilePage() {
         onClose={closeCountryModal}
         onSelect={handleCountrySelect}
       />
-    </section>
+    </>
   )
 }

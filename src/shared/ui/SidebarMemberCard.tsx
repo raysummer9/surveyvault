@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
+import { IoCheckmarkCircleOutline, IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
 import { useAuth } from '../../features/auth/AuthContext'
 
 type SidebarMemberCardProps = {
@@ -8,7 +8,7 @@ type SidebarMemberCardProps = {
 }
 
 function getOnboardingStatusLabel(onboardingStatus: string | null | undefined) {
-  if (onboardingStatus === 'approved') return 'Onboarding Approved'
+  if (onboardingStatus === 'approved') return 'Approved'
   if (onboardingStatus === 'completed') return 'Pending Approval'
   if (onboardingStatus === 'rejected') return 'Onboarding Rejected'
   return 'Onboarding In Progress'
@@ -29,6 +29,7 @@ export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
   }, [profile?.first_name, profile?.last_name, user?.email])
 
   const onboardingStatusLabel = getOnboardingStatusLabel(profile?.onboarding_status)
+  const isApproved = profile?.onboarding_status === 'approved'
 
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true)
@@ -46,9 +47,9 @@ export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
 
   return (
     <>
-      <div className="onboarding-member">
+      <div className={`onboarding-member ${isApproved ? 'onboarding-member-approved' : ''}`}>
         <div className="onboarding-member-main">
-          <IoPersonOutline />
+          {isApproved ? <IoCheckmarkCircleOutline className="onboarding-member-approved-icon" /> : <IoPersonOutline />}
           <div>
             <p>{displayName}</p>
             <small>{onboardingStatusLabel}</small>

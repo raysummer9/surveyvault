@@ -51,9 +51,9 @@ export function SignInPage() {
           window.setTimeout(() => reject(new Error('Sign in timed out. Please try again.')), SIGN_IN_TIMEOUT_MS)
         }),
       ])
-      // Auth session is already established by Supabase after sign-in.
-      // Profile/onboarding hydration runs in AuthProvider; don't block navigation on it.
-      navigate('/dashboard/onboarding')
+      // Auth session is established by Supabase. Profile hydration runs in AuthProvider.
+      // PostLoginRedirect will send approved users to workforce or dashboard based on joined state.
+      navigate('/dashboard')
     } catch (signInError) {
       const message = signInError instanceof Error ? signInError.message : 'Unable to sign in.'
       setSubmitError(message)

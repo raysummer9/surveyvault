@@ -9,6 +9,7 @@ export type UserProfile = {
   last_name: string | null
   onboarding_status: OnboardingStatus
   workforce_approved: boolean
+  workforce_joined: boolean
   created_at: string
   updated_at: string
 }
@@ -72,6 +73,18 @@ export function isOnboardingComplete(submission: OnboardingSubmission | null | u
 export function isProfileMarkedOnboardingComplete(profile: UserProfile | null | undefined) {
   if (!profile) return false
   return profile.onboarding_status === 'completed' || profile.onboarding_status === 'approved'
+}
+
+export function isOnboardingRejected(profile: UserProfile | null | undefined) {
+  return profile?.onboarding_status === 'rejected'
+}
+
+export function isAdminApproved(profile: UserProfile | null | undefined) {
+  return profile?.onboarding_status === 'approved' && profile?.workforce_approved === true
+}
+
+export function hasJoinedWorkforce(profile: UserProfile | null | undefined) {
+  return profile?.workforce_joined === true
 }
 
 export function canAccessOnboardingStep(

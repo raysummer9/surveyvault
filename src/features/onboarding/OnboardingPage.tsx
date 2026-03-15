@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { useMemo } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import {
+  IoAlertCircleOutline,
   IoBriefcaseOutline,
   IoGiftOutline,
   IoLocateOutline,
@@ -13,11 +13,14 @@ import {
 import { useAuth } from '../auth/AuthContext'
 import {
   getCompletedOnboardingSteps,
+  isAdminApproved,
+  isOnboardingRejected,
   isProfileMarkedOnboardingComplete,
   isWorkforceApproved,
   type OnboardingStepId,
 } from '../auth/types'
-import { SidebarMemberCard } from '../../shared/ui/SidebarMemberCard'
+import { AppSidebarLayout } from '../../shared/ui/AppSidebarLayout'
+import { OnboardingTopbar } from '../../shared/ui/OnboardingTopbar'
 
 type StepStatus = 'completed' | 'active' | 'locked'
 
@@ -55,19 +58,10 @@ const setupSteps: SetupStep[] = [
   },
 ]
 
-const navItems = ['Onboarding', 'Dashboard', 'Surveys', 'Earnings']
-const verificationItems: { id: OnboardingStepId; label: string }[] = [
-  { id: 'profile', label: 'Complete Profile' },
-  { id: 'skill', label: 'Skill Verification' },
-  { id: 'id', label: 'ID Verification' },
-  { id: 'address', label: 'Address Verification' },
-]
-
 export function OnboardingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, onboarding, profile, refreshUserState, debug } = useAuth()
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const completedSteps = useMemo(() => {
     const submissionCompleted = getCompletedOnboardingSteps(onboarding)
     if (submissionCompleted.length > 0) return submissionCompleted
@@ -84,6 +78,12 @@ export function OnboardingPage() {
     () => new URLSearchParams(location.search).get('debugOnboarding') === '1',
     [location.search],
   )
+  const isRejected = isOnboardingRejected(profile)
+  const isApproved = isAdminApproved(profile)
+
+  if (isApproved) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   const statuses = useMemo(
     () =>
@@ -100,85 +100,13 @@ export function OnboardingPage() {
     navigate(step.path)
   }
 
-  useEffect(() => {
-    if (!mobileSidebarOpen) return
-
-    document.body.style.overflow = 'hidden'
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobileSidebarOpen(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleEscape)
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleEscape)
-    }
-  }, [mobileSidebarOpen])
-
   return (
-    <section className="onboarding-shell">
-      <aside className="onboarding-sidebar">
-        <div className="onboarding-logo">
-          <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
-        </div>
-
-        <p className="onboarding-nav-title">Account Setup</p>
-        <nav className="onboarding-nav">
-          {navItems.map((item, idx) => {
-            const isActive = idx === 0
-            return (
-              <button key={item} className={isActive ? 'onboarding-nav-item active' : 'onboarding-nav-item'}>
-                <span>{item}</span>
-                {!isActive && <IoLockClosedOutline />}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="verification-steps-panel">
-          <p className="verification-steps-title">Verification Steps</p>
-          {verificationItems.map((item, index) => {
-            const isCompleted = completedSteps.includes(item.id)
-            const isActive = setupSteps[activeIndex]?.id === item.id
-            return (
-              <button
-                key={item.id}
-                className={
-                  isCompleted
-                    ? 'verification-step-item complete'
-                    : isActive
-                      ? 'verification-step-item active'
-                      : 'verification-step-item'
-                }
-              >
-                <span className="verification-step-count">{isCompleted ? '✓' : index + 1}</span>
-                {item.label}
-              </button>
-            )
-          })}
-        </div>
-
-        <SidebarMemberCard />
-      </aside>
-
-      <div className="onboarding-main">
-        <header className="onboarding-topbar">
-          <button
-            type="button"
-            className="profile-mobile-menu-btn"
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label="Open dashboard menu"
-          >
-            <HiOutlineMenu />
-          </button>
-          <h2>Account Verification</h2>
-          <span className="onboarding-chip">Action Required</span>
-        </header>
-
-        <div className="onboarding-content">
+    <AppSidebarLayout>
+      <OnboardingTopbar
+        title="Account Verification"
+        chips={<span className="onboarding-chip">Action Required</span>}
+      />
+      <div className="onboarding-content">
           {debugEnabled && (
             <article className="profile-form-card">
               <header className="profile-card-header">
@@ -241,6 +169,16 @@ export function OnboardingPage() {
                 </button>
               </div>
             </article>
+          )}
+
+          {isRejected && (
+            <div className="onboarding-rejected-banner" role="alert">
+              <IoAlertCircleOutline aria-hidden />
+              <div>
+                <strong>Onboarding rejected</strong>
+                <p>Your previous submission was not accepted. Please review the steps below and resubmit your information.</p>
+              </div>
+            </div>
           )}
 
           <article className="onboarding-welcome-card">
@@ -340,60 +278,6 @@ export function OnboardingPage() {
             </button>
           </article>
         </div>
-      </div>
-
-      <div
-        className={mobileSidebarOpen ? 'onboarding-mobile-overlay open' : 'onboarding-mobile-overlay'}
-        onClick={() => setMobileSidebarOpen(false)}
-        role="button"
-        tabIndex={0}
-        aria-label="Close onboarding menu"
-      />
-
-      <aside className={mobileSidebarOpen ? 'onboarding-mobile-sidebar open' : 'onboarding-mobile-sidebar'}>
-        <div className="onboarding-mobile-sidebar-head">
-          <span className="brand-text">Dashboard Menu</span>
-          <button
-            type="button"
-            className="onboarding-mobile-close-btn"
-            onClick={() => setMobileSidebarOpen(false)}
-            aria-label="Close dashboard menu"
-          >
-            <HiOutlineX />
-          </button>
-        </div>
-
-        <nav className="onboarding-mobile-nav">
-          <NavLink
-            to="/dashboard/onboarding"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Onboarding
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/dashboard/surveys"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Surveys
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Earnings
-          </NavLink>
-        </nav>
-      </aside>
-    </section>
+    </AppSidebarLayout>
   )
 }

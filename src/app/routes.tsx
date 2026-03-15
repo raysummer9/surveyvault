@@ -10,6 +10,7 @@ import { IdVerificationPage } from '../features/onboarding/IdVerificationPage'
 import { NotFoundPage } from '../features/not-found/NotFoundPage'
 import { OnboardingPage } from '../features/onboarding/OnboardingPage'
 import { SkillVerificationPage } from '../features/onboarding/SkillVerificationPage'
+import { PostLoginRedirect } from '../features/auth/PostLoginRedirect'
 import {
   RequireAuth,
   RequireAdmin,
@@ -97,7 +98,14 @@ export const appRouter = createBrowserRouter([
       },
       { path: 'surveys', element: <Navigate to="/dashboard/surveys" replace /> },
       { path: 'workforce/join', element: <Navigate to="/dashboard/workforce/join" replace /> },
-      { path: 'dashboard', element: <Navigate to="/dashboard/earnings" replace /> },
+      {
+        path: 'dashboard',
+        element: (
+          <RequireAuth>
+            <PostLoginRedirect />
+          </RequireAuth>
+        ),
+      },
       {
         path: 'dashboard/surveys',
         element: (

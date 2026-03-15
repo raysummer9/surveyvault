@@ -1,6 +1,5 @@
 import { type ChangeEvent, useEffect, useMemo, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { useNavigate } from 'react-router-dom'
 import {
   IoArrowBackOutline,
   IoArrowForward,
@@ -10,7 +9,6 @@ import {
   IoCloudUploadOutline,
   IoHomeOutline,
   IoLocateOutline,
-  IoLockClosedOutline,
   IoShieldCheckmarkOutline,
 } from 'react-icons/io5'
 import { CountrySelectModal } from './CountrySelectModal'
@@ -18,7 +16,8 @@ import { useAuth } from '../auth/AuthContext'
 import { saveOnboardingStep } from './onboardingApi'
 import { type UploadedOnboardingFile, uploadOnboardingFile } from './onboardingStorage'
 import { formatLastSavedLabel } from './onboardingTime'
-import { SidebarMemberCard } from '../../shared/ui/SidebarMemberCard'
+import { AppSidebarLayout } from '../../shared/ui/AppSidebarLayout'
+import { OnboardingTopbar } from '../../shared/ui/OnboardingTopbar'
 
 type AddressFormValues = {
   country: string
@@ -32,8 +31,6 @@ type AddressFormValues = {
 
 type AddressFormErrors = Partial<Record<keyof AddressFormValues | 'proofFile' | 'consent', string>>
 
-const navItems = ['Onboarding', 'Dashboard', 'Surveys', 'Earnings']
-
 const proofTypeOptions = [
   'Utility Bill (within last 3 months)',
   'Bank Statement (within last 3 months)',
@@ -44,7 +41,6 @@ const proofTypeOptions = [
 export function AddressVerificationPage() {
   const navigate = useNavigate()
   const { user, onboarding, refreshUserState } = useAuth()
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [countryModalOpen, setCountryModalOpen] = useState(false)
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [existingProofFile, setExistingProofFile] = useState<UploadedOnboardingFile | null>(null)
@@ -83,21 +79,6 @@ export function AddressVerificationPage() {
     if (existingProofFile?.sizeBytes) return `${(existingProofFile.sizeBytes / (1024 * 1024)).toFixed(1)}MB`
     return '0.0MB'
   }, [proofFile, existingProofFile])
-
-  useEffect(() => {
-    if (!mobileSidebarOpen) return
-
-    document.body.style.overflow = 'hidden'
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileSidebarOpen(false)
-    }
-
-    window.addEventListener('keydown', handleEscape)
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleEscape)
-    }
-  }, [mobileSidebarOpen])
 
   useEffect(() => {
     if (!completionToastOpen) return
@@ -220,72 +201,22 @@ export function AddressVerificationPage() {
   }
 
   return (
-    <section className="onboarding-shell">
-      <aside className="onboarding-sidebar">
-        <div className="onboarding-logo">
-          <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
-        </div>
-        <p className="onboarding-nav-title">Account Setup</p>
-        <nav className="onboarding-nav">
-          {navItems.map((item, idx) => {
-            const isActive = idx === 0
-            return (
-              <button key={item} className={isActive ? 'onboarding-nav-item active' : 'onboarding-nav-item'}>
-                <span>{item}</span>
-                {!isActive && <IoLockClosedOutline />}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="verification-steps-panel">
-          <p className="verification-steps-title">Verification Steps</p>
-          <button className="verification-step-item complete">
-            <span className="verification-step-count">✓</span>
-            Complete Profile
-          </button>
-          <button className="verification-step-item complete">
-            <span className="verification-step-count">✓</span>
-            Skill Verification
-          </button>
-          <button className="verification-step-item complete">
-            <span className="verification-step-count">✓</span>
-            ID Verification
-          </button>
-          <button className="verification-step-item active">
-            <span className="verification-step-count">4</span>
-            Address Verification
-          </button>
-        </div>
-
-        <SidebarMemberCard />
-      </aside>
-
-      <div className="onboarding-main">
-        <header className="onboarding-topbar profile-topbar">
-          <button
-            type="button"
-            className="profile-mobile-menu-btn"
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label="Open onboarding menu"
-          >
-            <HiOutlineMenu />
-          </button>
-          <div>
-            <h2>Address Verification</h2>
-            <p>Step 4 of 4 — Address Check</p>
-          </div>
-          <div className="profile-topbar-chips">
+    <>
+    <AppSidebarLayout>
+      <OnboardingTopbar
+        title="Address Verification"
+        subtitle="Step 4 of 4 — Address Check"
+        chips={
+          <>
             <span className="profile-chip step">
               <IoCheckmarkCircleOutline />
               Step 4 of 4
             </span>
             <span className="profile-chip progress">Final Step</span>
-          </div>
-        </header>
-
-        <div className="onboarding-content profile-content">
+          </>
+        }
+      />
+      <div className="onboarding-content profile-content">
           <article className="profile-progress-card">
             <div className="profile-progress-head">
               <span>Account Verification Progress</span>
@@ -540,60 +471,7 @@ export function AddressVerificationPage() {
             </p>
           </div>
         </div>
-      </div>
-
-      <div
-        className={mobileSidebarOpen ? 'onboarding-mobile-overlay open' : 'onboarding-mobile-overlay'}
-        onClick={() => setMobileSidebarOpen(false)}
-        role="button"
-        tabIndex={0}
-        aria-label="Close onboarding menu"
-      />
-
-      <aside className={mobileSidebarOpen ? 'onboarding-mobile-sidebar open' : 'onboarding-mobile-sidebar'}>
-        <div className="onboarding-mobile-sidebar-head">
-          <span className="brand-text">Dashboard Menu</span>
-          <button
-            type="button"
-            className="onboarding-mobile-close-btn"
-            onClick={() => setMobileSidebarOpen(false)}
-            aria-label="Close onboarding menu"
-          >
-            <HiOutlineX />
-          </button>
-        </div>
-
-        <nav className="onboarding-mobile-nav">
-          <NavLink
-            to="/dashboard/onboarding"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Onboarding
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/dashboard/surveys"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Surveys
-          </NavLink>
-          <NavLink
-            to="/dashboard/earnings"
-            className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            Earnings
-          </NavLink>
-        </nav>
-      </aside>
+    </AppSidebarLayout>
 
       <CountrySelectModal
         isOpen={countryModalOpen}
@@ -629,7 +507,7 @@ export function AddressVerificationPage() {
           </div>
         </div>
       )}
-    </section>
+    </>
   )
 }
 
