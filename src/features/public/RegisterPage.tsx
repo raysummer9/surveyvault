@@ -53,7 +53,7 @@ const benefits = [
   {
     icon: HiOutlineLightningBolt,
     title: 'Instant Payouts',
-    desc: 'Withdraw earnings as soon as you hit $10',
+    desc: 'Withdraw earnings once you reach $500',
     metric: '24hr',
     metricSub: 'processing',
     color: 'purple',

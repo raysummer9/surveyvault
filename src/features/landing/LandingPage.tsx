@@ -8,6 +8,7 @@ import {
   FiDollarSign,
   FiGift,
   FiHeart,
+  FiMinus,
   FiMonitor,
   FiPlus,
   FiShield,
@@ -16,6 +17,7 @@ import {
   FiWind,
   FiZap,
 } from 'react-icons/fi'
+import { LandingCta } from '../../shared/ui/LandingCta'
 import { PublicPageLayout } from '../../shared/ui/PublicPageLayout'
 
 const benefits = [
@@ -209,9 +211,43 @@ const testimonials = [
 const TESTIMONIALS_PER_VIEW_DESKTOP = 3
 const MOBILE_BREAKPOINT = 768
 
+const faqItems = [
+  {
+    question: 'Is creating an account free?',
+    answer:
+      'Yes. Creating a SurveyVault account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.',
+  },
+  {
+    question: 'How much can I earn with SurveyVault?',
+    answer:
+      'Earnings vary by survey length and complexity. Most surveys pay between $1–$50, with typical payouts of $3–$5 for 10–15 minute surveys. Active members can earn $100–$500+ per month depending on their availability and survey eligibility.',
+  },
+  {
+    question: 'When and how do I get paid?',
+    answer:
+      'You can request a payout once you reach the minimum threshold of $500. Payouts are processed within 3–5 business days. We support PayPal, bank transfer, and gift cards to major retailers.',
+  },
+  {
+    question: 'Is my personal data safe?',
+    answer:
+      'Yes. We are GDPR compliant and never sell your data. Your information is encrypted and used only to match you with relevant surveys. You can delete your account and data at any time from your account settings.',
+  },
+  {
+    question: 'How do I qualify for surveys?',
+    answer:
+      'Surveys are matched based on your profile (demographics, interests, and experience). Complete your profile during onboarding to increase your match rate. Some surveys have additional screening questions at the start.',
+  },
+  {
+    question: 'Can I refer friends and earn more?',
+    answer:
+      'Yes! Our referral program pays you 10% of your friends’ lifetime earnings. Share your unique link from the dashboard—when they sign up and earn, you earn too. There’s no cap on referral bonuses.',
+  },
+] as const
+
 export function LandingPage() {
   const [firstVisibleIndex, setFirstVisibleIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [expandedFaqIndex, setExpandedFaqIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`)
@@ -398,7 +434,8 @@ export function LandingPage() {
             </div>
             <h3 className="landing-featured-card-cta-title">50+ More Surveys</h3>
             <p className="landing-featured-card-cta-desc">
-              Create a free account to unlock all available surveys and start earning today.
+              Create a free account. A small one-time workforce fee unlocks all available surveys and
+              earning.
             </p>
             <Link className="landing-featured-card-cta-btn" to="/register">
               Join Free <FiArrowRight />
@@ -467,15 +504,97 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-cta">
-        <h2 className="landing-section-title">Ready to get started?</h2>
-        <p className="landing-cta-text">
-          Create your free account and complete onboarding to unlock paid survey opportunities.
+      <section className="landing-faq">
+        <span className="landing-faq-badge">FAQ</span>
+        <h2 className="landing-faq-title">Frequently asked questions</h2>
+        <p className="landing-faq-subtitle">
+          Everything you need to know about SurveyVault.
         </p>
-        <Link className="button landing-cta-primary" to="/register">
-          Get Started
-        </Link>
+        <div className="landing-faq-list">
+          {faqItems.map((item, i) => {
+            const isExpanded = expandedFaqIndex === i
+            return (
+              <div
+                key={i}
+                className={`landing-faq-item ${isExpanded ? 'landing-faq-item-expanded' : ''}`}
+              >
+                <button
+                  type="button"
+                  className="landing-faq-question"
+                  onClick={() => setExpandedFaqIndex(isExpanded ? null : i)}
+                  aria-expanded={isExpanded}
+                  aria-controls={`faq-answer-${i}`}
+                  id={`faq-question-${i}`}
+                >
+                  <span>{item.question}</span>
+                  <span className="landing-faq-icon" aria-hidden>
+                    {isExpanded ? <FiMinus /> : <FiPlus />}
+                  </span>
+                </button>
+                <div
+                  id={`faq-answer-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-question-${i}`}
+                  className="landing-faq-answer"
+                  hidden={!isExpanded}
+                >
+                  {item.answer}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </section>
+
+      <LandingCta />
+
+      <footer className="landing-footer">
+        <div className="landing-footer-inner">
+          <div className="landing-footer-brand">
+            <Link to="/" className="landing-footer-logo">
+              <span className="landing-footer-logo-icon">S</span>
+              <span className="landing-footer-logo-text">SurveyVault</span>
+            </Link>
+            <p className="landing-footer-tagline">
+              The most trusted survey platform for earning real rewards. Your opinion shapes the
+              future.
+            </p>
+            <p className="landing-footer-copyright">© 2024 SurveyVault. All rights reserved.</p>
+          </div>
+          <nav className="landing-footer-nav" aria-label="Platform links">
+            <h3 className="landing-footer-heading">Platform</h3>
+            <ul className="landing-footer-links">
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/open-projects">Open Surveys</Link>
+              </li>
+              <li>
+                <Link to="/what-to-expect">What to Expect</Link>
+              </li>
+            </ul>
+          </nav>
+          <nav className="landing-footer-nav" aria-label="Account links">
+            <h3 className="landing-footer-heading">Account</h3>
+            <ul className="landing-footer-links">
+              <li>
+                <Link to="/sign-in">Login</Link>
+              </li>
+              <li>
+                <Link to="/register">Register</Link>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div className="landing-footer-legal">
+          <Link to="/privacy">Privacy Policy</Link>
+          <span className="landing-footer-legal-sep">·</span>
+          <Link to="/terms">Terms of Service</Link>
+          <span className="landing-footer-legal-sep">·</span>
+          <Link to="/cookies">Cookie Policy</Link>
+        </div>
+      </footer>
     </PublicPageLayout>
   )
 }

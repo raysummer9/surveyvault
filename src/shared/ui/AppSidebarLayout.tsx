@@ -28,7 +28,7 @@ type NavItem = { to: string; label: string; adminOnly?: boolean }
 
 const allNavItems: NavItem[] = [
   { to: '/dashboard/onboarding', label: 'Onboarding' },
-  { to: '/dashboard/earnings', label: 'Dashboard' },
+  { to: '/dashboard/earnings', label: 'Overview' },
   { to: '/dashboard/surveys', label: 'Surveys' },
   { to: '/dashboard/workforce/join', label: 'Workforce' },
   { to: '/admin/onboarding-review', label: 'Admin Reviews', adminOnly: true },
@@ -96,7 +96,7 @@ export function AppSidebarLayout({ children }: AppSidebarLayoutProps) {
         </Link>
       </div>
 
-      <p className="onboarding-nav-title">Account Setup</p>
+      <p className="onboarding-nav-title">Dashboard</p>
       <nav className="onboarding-nav">
         {navItems.map((item) => (
           <NavLink
