@@ -3,6 +3,7 @@ import { FiBell, FiChevronDown, FiCopy, FiCreditCard, FiList, FiMail, FiMessageC
 import { IoWalletOutline } from 'react-icons/io5'
 import { HiOutlineMenu } from 'react-icons/hi'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
+import { APP_NAME } from '../../config/brand'
 import { SUPPORT_EMAIL, supportMailto } from '../../config/support'
 
 const FAQ_ITEMS = [
@@ -109,7 +110,7 @@ export function SupportPage() {
                   {copied ? <span className="support-email-copied">Copied</span> : null}
                 </button>
               </div>
-              <a href={supportMailto('Taskpulse support')} className="support-email-mailto">
+              <a href={supportMailto(`${APP_NAME} support`)} className="support-email-mailto">
                 Tap to open your mail app
               </a>
             </div>

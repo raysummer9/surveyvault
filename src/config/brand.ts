@@ -1,2 +1,2 @@
 /** Public product name (navbar, footer, copy). */
-export const APP_NAME = 'Taskpulse'
+export const APP_NAME = 'Taskpluse'

@@ -15,6 +15,8 @@ import {
 } from 'react-icons/io5'
 import { MdAttachMoney, MdGroups, MdOutlineDescription } from 'react-icons/md'
 import { z } from 'zod'
+import { APP_NAME } from '../../config/brand'
+import { formatAuthErrorMessage } from '../../lib/authErrorMessages'
 import { useAuth } from '../auth/AuthContext'
 
 const registerSchema = z
@@ -156,8 +158,7 @@ export function RegisterPage() {
       })
       navigate('/sign-in')
     } catch (registerError) {
-      const message = registerError instanceof Error ? registerError.message : 'Unable to create account.'
-      setSubmitError(message)
+      setSubmitError(formatAuthErrorMessage(registerError, 'Unable to create account.'))
     } finally {
       setSubmitting(false)
     }
@@ -167,14 +168,14 @@ export function RegisterPage() {
     <section className="login-layout register-layout">
       <aside className="login-hero register-hero">
         <div className="login-hero-brand">
-          <span className="brand-icon">S</span>
-          <span>Taskpulse</span>
+          <span className="brand-icon">TP</span>
+          <span>{APP_NAME}</span>
         </div>
         <h1>
           Your voice is <span className="register-heading-accent">worth more</span> than you think.
         </h1>
         <p className="register-desc">
-          Join Taskpulse and start earning real cash by sharing your opinions. It takes less than 2
+          Join {APP_NAME} and start earning real cash by sharing your opinions. It takes less than 2
           minutes to get started.
         </p>
 

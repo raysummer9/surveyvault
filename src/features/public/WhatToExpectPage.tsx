@@ -25,6 +25,7 @@ import {
   FiZap,
 } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../config/brand'
 import { LandingCta } from '../../shared/ui/LandingCta'
 import { PublicPageLayout } from '../../shared/ui/PublicPageLayout'
 
@@ -256,8 +257,7 @@ const journeySteps = [
 const journeyFaqItems = [
   {
     question: 'Is creating an account free?',
-    answer:
-      'Yes. Creating a Taskpulse account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.',
+    answer: `Yes. Creating a ${APP_NAME} account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.`,
   },
   {
     question: 'How long does it take to get paid?',
@@ -296,7 +296,7 @@ export function WhatToExpectPage() {
             How It Works
           </div>
           <h1 className="expect-hero-title">
-            Everything you need to know about <span className="expect-hero-accent">Taskpulse</span>
+            Everything you need to know about <span className="expect-hero-accent">{APP_NAME}</span>
           </h1>
           <p className="expect-hero-desc">
             From signing up to cashing out — here's a complete guide to how our platform works, how
@@ -369,7 +369,7 @@ export function WhatToExpectPage() {
               Transparent, fair, and instant rewards
             </h2>
             <p className="expect-earnings-desc">
-              Every survey on Taskpulse shows you the exact reward before you start. No hidden
+              Every survey on {APP_NAME} shows you the exact reward before you start. No hidden
               deductions, no waiting periods — your earnings are credited the moment you submit.
             </p>
             <ul className="expect-earnings-features">
@@ -470,7 +470,7 @@ export function WhatToExpectPage() {
             <FiTarget aria-hidden />
             Platform Features
           </div>
-          <h2 className="expect-features-title">Why members love Taskpulse</h2>
+          <h2 className="expect-features-title">Why members love {APP_NAME}</h2>
           <p className="expect-features-subtitle">
             Built with your experience in mind — from smart matching to flexible payouts.
           </p>
@@ -555,7 +555,7 @@ export function WhatToExpectPage() {
           <div className="expect-journey-left">
             <h2 className="expect-journey-title">From sign-up to first payout</h2>
             <p className="expect-journey-subtitle">
-              Here&apos;s a realistic timeline of what to expect in your first week on Taskpulse.
+              Here&apos;s a realistic timeline of what to expect in your first week on {APP_NAME}.
             </p>
             <div className="expect-journey-timeline">
               {journeySteps.map((step) => {
@@ -631,14 +631,14 @@ export function WhatToExpectPage() {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <Link to="/" className="landing-footer-logo">
-              <span className="landing-footer-logo-icon">S</span>
-              <span className="landing-footer-logo-text">Taskpulse</span>
+              <span className="landing-footer-logo-icon">TP</span>
+              <span className="landing-footer-logo-text">{APP_NAME}</span>
             </Link>
             <p className="landing-footer-tagline">
               The most trusted survey platform for earning real rewards. Your opinion shapes the
               future.
             </p>
-            <p className="landing-footer-copyright">© 2024 Taskpulse. All rights reserved.</p>
+            <p className="landing-footer-copyright">© 2024 {APP_NAME}. All rights reserved.</p>
           </div>
           <nav className="landing-footer-nav" aria-label="Platform links">
             <h3 className="landing-footer-heading">Platform</h3>

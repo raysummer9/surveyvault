@@ -9,6 +9,7 @@ import {
   FiSearch,
 } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../config/brand'
 import { PublicPageLayout } from '../../shared/ui/PublicPageLayout'
 
 const CATEGORIES = [
@@ -329,14 +330,14 @@ export function OpenProjectsPage() {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <Link to="/" className="landing-footer-logo">
-              <span className="landing-footer-logo-icon">S</span>
-              <span className="landing-footer-logo-text">Taskpulse</span>
+              <span className="landing-footer-logo-icon">TP</span>
+              <span className="landing-footer-logo-text">{APP_NAME}</span>
             </Link>
             <p className="landing-footer-tagline">
               The most trusted survey platform for earning real rewards. Your opinion shapes the
               future.
             </p>
-            <p className="landing-footer-copyright">© 2024 Taskpulse. All rights reserved.</p>
+            <p className="landing-footer-copyright">© 2024 {APP_NAME}. All rights reserved.</p>
           </div>
           <nav className="landing-footer-nav" aria-label="Platform links">
             <h3 className="landing-footer-heading">Platform</h3>

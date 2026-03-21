@@ -1,5 +1,6 @@
 import { FiArrowRight } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../config/brand'
 
 export function LandingCta() {
   return (
@@ -11,7 +12,7 @@ export function LandingCta() {
         </div>
         <h2 className="landing-cta-title">Ready to start earning with your opinions?</h2>
         <p className="landing-cta-text">
-          Join Taskpulse today and start earning real cash rewards. Creating an account is free — a
+          Join {APP_NAME} today and start earning real cash rewards. Creating an account is free — a
           small one-time fee is required to join the workforce and start earning.
         </p>
         <div className="landing-cta-actions">

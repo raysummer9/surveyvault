@@ -44,7 +44,7 @@ export function AppLayout() {
         <>
           <header className="public-navbar">
             <Link className="brand-link" to="/" onClick={closeSidebar}>
-              <span className="brand-icon">S</span>
+              <span className="brand-icon">TP</span>
               <span className="brand-text">{APP_NAME}</span>
             </Link>
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { FiArrowRight, FiShield } from 'react-icons/fi'
 import { IoEyeOffOutline, IoEyeOutline, IoLockClosedOutline, IoMailOutline } from 'react-icons/io5'
 import { z } from 'zod'
+import { APP_NAME } from '../../config/brand'
 import { useAuth } from '../auth/AuthContext'
 
 const signInSchema = z.object({
@@ -54,9 +55,9 @@ export function AdminLoginPage() {
     <section className="admin-login-layout">
       <div className="admin-login-card">
         <div className="admin-login-header">
-          <span className="brand-icon">S</span>
+          <span className="brand-icon">TP</span>
           <h1>Admin Login</h1>
-          <p>Sign in to access the Taskpulse admin panel.</p>
+          <p>Sign in to access the {APP_NAME} admin panel.</p>
         </div>
 
         <form className="admin-login-form" onSubmit={handleSubmit} noValidate>
@@ -115,7 +116,7 @@ export function AdminLoginPage() {
           <Link to="/sign-in" className="admin-login-link">
             User login <FiArrowRight />
           </Link>
-          <Link to="/">Back to Taskpulse</Link>
+          <Link to="/">Back to {APP_NAME}</Link>
         </div>
       </div>
     </section>

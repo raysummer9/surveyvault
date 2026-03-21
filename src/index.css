@@ -52,16 +52,19 @@ body {
 }
 
 .brand-icon {
-  width: 23px;
-  height: 23px;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 6px;
+  width: auto;
   border-radius: 7px;
   background: linear-gradient(145deg, #5a7dff, #6f55f4);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: -0.04em;
   line-height: 1;
 }
 
@@ -1334,7 +1337,7 @@ body {
   }
 }
 
-/* Expect features – why members love Taskpulse */
+/* Expect features – product name from APP_NAME in WhatToExpectPage */
 .expect-features {
   padding: 64px 24px;
   background: #f8fafc;
@@ -3049,16 +3052,19 @@ body {
 }
 
 .landing-footer-logo-icon {
-  width: 28px;
+  min-width: 32px;
   height: 28px;
+  padding: 0 7px;
+  width: auto;
   border-radius: 6px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: -0.04em;
 }
 
 .landing-footer-tagline {
@@ -11698,18 +11704,18 @@ svg.spin {
     height: 46px;
   }
 
+  /* Closed: no overlay in the tree — a full-screen fixed layer with opacity:0 + pointer-events:none
+     still blocked taps on some mobile browsers (production). Only show when open. */
   .onboarding-mobile-overlay {
+    display: none;
+  }
+
+  .onboarding-mobile-overlay.open {
     display: block;
     position: fixed;
     inset: 0;
     background: rgba(2, 6, 23, 0.42);
     z-index: 105;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .onboarding-mobile-overlay.open {
     opacity: 1;
     pointer-events: auto;
   }

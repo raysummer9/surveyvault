@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IoEyeOffOutline, IoEyeOutline, IoLockClosedOutline } from 'react-icons/io5'
 import { z } from 'zod'
+import { APP_NAME } from '../../config/brand'
 import { useAuth } from '../auth/AuthContext'
 
 const resetPasswordSchema = z
@@ -51,7 +52,7 @@ export function ResetPasswordPage() {
       <section className="login-form-wrap">
         <div className="login-card">
           <h2>Choose a new password</h2>
-          <p className="subtle">Set a strong password to secure your Taskpulse account.</p>
+          <p className="subtle">Set a strong password to secure your {APP_NAME} account.</p>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <label htmlFor="new-password">

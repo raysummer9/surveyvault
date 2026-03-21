@@ -6,6 +6,7 @@ import { FiArrowRight, FiUser } from 'react-icons/fi'
 import { HiOutlineLightningBolt } from 'react-icons/hi'
 import { IoEyeOffOutline, IoEyeOutline, IoLockClosedOutline, IoMailOutline } from 'react-icons/io5'
 import { z } from 'zod'
+import { APP_NAME } from '../../config/brand'
 import { useAuth } from '../auth/AuthContext'
 
 const signInSchema = z.object({
@@ -71,8 +72,8 @@ export function SignInPage() {
     <section className="login-layout">
       <aside className="login-hero">
         <div className="login-hero-brand">
-          <span className="brand-icon">S</span>
-          <span>Taskpulse</span>
+          <span className="brand-icon">TP</span>
+          <span>{APP_NAME}</span>
         </div>
         <h1>
           Welcome back.
@@ -196,7 +197,7 @@ export function SignInPage() {
 
             <button className="auth-submit" type="submit" disabled={submitting}>
               <FiUser />
-              {submitting ? 'Signing in...' : 'Sign In to Taskpulse'}
+              {submitting ? 'Signing in...' : `Sign In to ${APP_NAME}`}
             </button>
           </form>
 

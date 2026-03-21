@@ -56,7 +56,7 @@ export function AdminLayout() {
         <aside className="onboarding-sidebar admin-sidebar">
           <div className="onboarding-logo">
             <Link to="/admin" className="onboarding-logo-link" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
-              <span className="brand-icon">S</span>
+              <span className="brand-icon">TP</span>
               <span>{APP_NAME} Admin</span>
             </Link>
           </div>

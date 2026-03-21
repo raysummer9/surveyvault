@@ -194,7 +194,7 @@ export function AppSidebarLayout({ children }: AppSidebarLayoutProps) {
     <>
       <div className="onboarding-logo">
         <Link to="/" className="onboarding-logo-link" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
-          <span className="brand-icon">S</span>
+          <span className="brand-icon">TP</span>
           <span>{APP_NAME}</span>
         </Link>
       </div>

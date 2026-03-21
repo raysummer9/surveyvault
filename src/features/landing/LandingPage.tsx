@@ -17,6 +17,7 @@ import {
   FiWind,
   FiZap,
 } from 'react-icons/fi'
+import { APP_NAME } from '../../config/brand'
 import { LandingCta } from '../../shared/ui/LandingCta'
 import { PublicPageLayout } from '../../shared/ui/PublicPageLayout'
 
@@ -135,8 +136,7 @@ const stats = [
 
 const testimonials = [
   {
-    quote:
-      "I've been using Taskpulse for 6 months and have earned over $800. The surveys are relevant and the payouts are fast. Highly recommend to anyone looking for extra income.",
+    quote: `I've been using ${APP_NAME} for 6 months and have earned over $800. The surveys are relevant and the payouts are fast. Highly recommend to anyone looking for extra income.`,
     name: 'Sarah Mitchell',
     tier: 'Gold Member',
     earned: '$847 earned',
@@ -175,8 +175,7 @@ const testimonials = [
     initials: 'ET',
   },
   {
-    quote:
-      "Taskpulse's tier system motivated me to stay consistent. Now I'm Platinum and the higher-paying surveys are worth the effort.",
+    quote: `${APP_NAME}'s tier system motivated me to stay consistent. Now I'm Platinum and the higher-paying surveys are worth the effort.`,
     name: 'David Okonkwo',
     tier: 'Platinum Member',
     earned: '$1,890 earned',
@@ -199,14 +198,13 @@ const testimonials = [
     initials: 'AK',
   },
   {
-    quote:
-      "Referred three friends and we're all earning. The 10% bonus adds up. Taskpulse has become my go-to side hustle.",
+    quote: `Referred three friends and we're all earning. The 10% bonus adds up. ${APP_NAME} has become my go-to side hustle.`,
     name: 'Jordan Williams',
     tier: 'Platinum Member',
     earned: '$2,100 earned',
     initials: 'JW',
   },
-] as const
+]
 
 const TESTIMONIALS_PER_VIEW_DESKTOP = 3
 const MOBILE_BREAKPOINT = 768
@@ -214,11 +212,10 @@ const MOBILE_BREAKPOINT = 768
 const faqItems = [
   {
     question: 'Is creating an account free?',
-    answer:
-      'Yes. Creating a Taskpulse account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.',
+    answer: `Yes. Creating a ${APP_NAME} account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.`,
   },
   {
-    question: 'How much can I earn with Taskpulse?',
+    question: `How much can I earn with ${APP_NAME}?`,
     answer:
       'Earnings vary by survey length and complexity. Most surveys pay between $1–$50, with typical payouts of $3–$5 for 10–15 minute surveys. Active members can earn $100–$500+ per month depending on their availability and survey eligibility.',
   },
@@ -242,7 +239,7 @@ const faqItems = [
     answer:
       'Yes! Our referral program pays you 10% of your friends’ lifetime earnings. Share your unique link from the dashboard—when they sign up and earn, you earn too. There’s no cap on referral bonuses.',
   },
-] as const
+]
 
 export function LandingPage() {
   const [firstVisibleIndex, setFirstVisibleIndex] = useState(0)
@@ -459,7 +456,7 @@ export function LandingPage() {
         <span className="landing-testimonials-badge">Testimonials</span>
         <h2 className="landing-testimonials-title">What our experts say</h2>
         <p className="landing-testimonials-subtitle">
-          Real stories from real members who are earning with Taskpulse.
+          Real stories from real members who are earning with {APP_NAME}.
         </p>
         <div className="landing-testimonials-slider">
           <div
@@ -507,9 +504,7 @@ export function LandingPage() {
       <section className="landing-faq">
         <span className="landing-faq-badge">FAQ</span>
         <h2 className="landing-faq-title">Frequently asked questions</h2>
-        <p className="landing-faq-subtitle">
-          Everything you need to know about Taskpulse.
-        </p>
+        <p className="landing-faq-subtitle">Everything you need to know about {APP_NAME}.</p>
         <div className="landing-faq-list">
           {faqItems.map((item, i) => {
             const isExpanded = expandedFaqIndex === i
@@ -552,14 +547,14 @@ export function LandingPage() {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <Link to="/" className="landing-footer-logo">
-              <span className="landing-footer-logo-icon">S</span>
-              <span className="landing-footer-logo-text">Taskpulse</span>
+              <span className="landing-footer-logo-icon">TP</span>
+              <span className="landing-footer-logo-text">{APP_NAME}</span>
             </Link>
             <p className="landing-footer-tagline">
               The most trusted survey platform for earning real rewards. Your opinion shapes the
               future.
             </p>
-            <p className="landing-footer-copyright">© 2024 Taskpulse. All rights reserved.</p>
+            <p className="landing-footer-copyright">© 2024 {APP_NAME}. All rights reserved.</p>
           </div>
           <nav className="landing-footer-nav" aria-label="Platform links">
             <h3 className="landing-footer-heading">Platform</h3>
