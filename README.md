@@ -19,6 +19,34 @@ npm install
 npm run dev
 ```
 
+## Production / hosting (avoid 404 on deep links)
+
+This app uses **client-side routing** (`/admin/login`, `/dashboard/...`, etc.). The server must **serve `index.html`** for those paths, or users get a **404** when opening a URL directly or refreshing.
+
+### Vercel (recommended settings)
+
+The repo includes **`vercel.json`** with:
+
+- `outputDirectory`: `dist` (Vite’s build output)
+- `rewrites`: send all routes to `index.html` so `/admin/login` and other deep links work
+
+**What to do**
+
+1. Commit and push **`vercel.json`** from the repo root (same folder as `package.json`).
+2. In the Vercel dashboard → your project → **Settings → General**:
+   - **Framework Preset**: Vite (or “Other” with **Output Directory** = `dist`).
+3. Trigger a **new deployment** (Deployments → … → Redeploy), or push any commit so Vercel rebuilds.
+
+If `/admin/login` still 404s, the old deploy likely had no `vercel.json`—confirm the latest deployment includes it (Git commit on the deployment).
+
+### Other hosts
+
+| Host | What we ship |
+|------|----------------|
+| **Netlify / Cloudflare Pages** | `public/_redirects` → copied to `dist/` |
+| **Apache / many cPanels** | `public/.htaccess` → copied to `dist/` |
+| **Nginx** | `try_files $uri $uri/ /index.html;` in `location /` |
+
 ## Current Routes
 
 - `/` - landing page

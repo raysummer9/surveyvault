@@ -1,0 +1,2 @@
+# Netlify, Cloudflare Pages, etc.: serve SPA for all routes (no 404 on /admin/login, /dashboard/..., etc.)
+/*    /index.html   200
