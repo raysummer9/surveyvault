@@ -11,7 +11,7 @@ export function LandingCta() {
         </div>
         <h2 className="landing-cta-title">Ready to start earning with your opinions?</h2>
         <p className="landing-cta-text">
-          Join SurveyVault today and start earning real cash rewards. Creating an account is free — a
+          Join Taskpulse today and start earning real cash rewards. Creating an account is free — a
           small one-time fee is required to join the workforce and start earning.
         </p>
         <div className="landing-cta-actions">

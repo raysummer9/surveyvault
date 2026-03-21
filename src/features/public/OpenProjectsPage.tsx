@@ -330,13 +330,13 @@ export function OpenProjectsPage() {
           <div className="landing-footer-brand">
             <Link to="/" className="landing-footer-logo">
               <span className="landing-footer-logo-icon">S</span>
-              <span className="landing-footer-logo-text">SurveyVault</span>
+              <span className="landing-footer-logo-text">Taskpulse</span>
             </Link>
             <p className="landing-footer-tagline">
               The most trusted survey platform for earning real rewards. Your opinion shapes the
               future.
             </p>
-            <p className="landing-footer-copyright">© 2024 SurveyVault. All rights reserved.</p>
+            <p className="landing-footer-copyright">© 2024 Taskpulse. All rights reserved.</p>
           </div>
           <nav className="landing-footer-nav" aria-label="Platform links">
             <h3 className="landing-footer-heading">Platform</h3>

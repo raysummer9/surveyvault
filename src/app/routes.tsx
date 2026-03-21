@@ -1,7 +1,14 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom'
+import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './ui/AppLayout'
+import { AdminLayout } from '../shared/ui/AdminLayout'
+import { AdminLoginPage } from '../features/admin/AdminLoginPage'
 import { AdminOnboardingReviewPage } from '../features/admin/AdminOnboardingReviewPage'
+import { AdminPaymentDepositAddressesPage } from '../features/admin/AdminPaymentDepositAddressesPage'
+import { AdminPaymentSettingsLayout } from '../features/admin/AdminPaymentSettingsLayout'
 import { AdminPaymentSettingsPage } from '../features/admin/AdminPaymentSettingsPage'
+import { AdminSurveysPage } from '../features/admin/AdminSurveysPage'
+import { AdminWorkforceApprovalPage } from '../features/admin/AdminWorkforceApprovalPage'
+import { AdminWithdrawalsPage } from '../features/admin/AdminWithdrawalsPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { LandingPage } from '../features/landing/LandingPage'
 import { CompleteProfilePage } from '../features/onboarding/CompleteProfilePage'
@@ -17,6 +24,10 @@ import {
   RequireOnboardingComplete,
   RequireOnboardingStep,
   RequireWorkforceApproval,
+  RequireJoinWorkforceEligible,
+  RequirePaymentFlowAccess,
+  RequireUpgradeMembership,
+  RequireWorkforcePaymentPending,
 } from '../features/auth/routeGuards'
 import { ForgotPasswordPage } from '../features/public/ForgotPasswordPage'
 import { OpenProjectsPage } from '../features/public/OpenProjectsPage'
@@ -25,7 +36,13 @@ import { SignInPage } from '../features/public/SignInPage'
 import { RegisterPage } from '../features/public/RegisterPage'
 import { WhatToExpectPage } from '../features/public/WhatToExpectPage'
 import { SurveysPage } from '../features/surveys/SurveysPage'
+import { SurveyTakePage } from '../features/surveys/SurveyTakePage'
+import { WithdrawalPage } from '../features/withdrawals/WithdrawalPage'
 import { JoinWorkforcePage } from '../features/workforce/JoinWorkforcePage'
+import { PaymentPage } from '../features/workforce/PaymentPage'
+import { UpgradeMembershipPage } from '../features/workforce/UpgradeMembershipPage'
+import { WorkforcePendingReviewPage } from '../features/workforce/WorkforcePendingReviewPage'
+import { SupportPage } from '../features/support/SupportPage'
 
 export const appRouter = createBrowserRouter([
   {
@@ -98,6 +115,9 @@ export const appRouter = createBrowserRouter([
       },
       { path: 'surveys', element: <Navigate to="/dashboard/surveys" replace /> },
       { path: 'workforce/join', element: <Navigate to="/dashboard/workforce/join" replace /> },
+      { path: 'workforce/payment', element: <Navigate to="/dashboard/workforce/payment" replace /> },
+      { path: 'workforce/upgrade', element: <Navigate to="/dashboard/workforce/upgrade" replace /> },
+      { path: 'support', element: <Navigate to="/dashboard/support" replace /> },
       {
         path: 'dashboard',
         element: (
@@ -111,7 +131,21 @@ export const appRouter = createBrowserRouter([
         element: (
           <RequireAuth>
             <RequireOnboardingComplete>
-              <SurveysPage />
+              <RequireWorkforceApproval>
+                <SurveysPage />
+              </RequireWorkforceApproval>
+            </RequireOnboardingComplete>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'dashboard/surveys/:surveyId/take',
+        element: (
+          <RequireAuth>
+            <RequireOnboardingComplete>
+              <RequireWorkforceApproval>
+                <SurveyTakePage />
+              </RequireWorkforceApproval>
             </RequireOnboardingComplete>
           </RequireAuth>
         ),
@@ -120,9 +154,43 @@ export const appRouter = createBrowserRouter([
         path: 'dashboard/workforce/join',
         element: (
           <RequireAuth>
-            <RequireWorkforceApproval>
+            <RequireJoinWorkforceEligible>
               <JoinWorkforcePage />
-            </RequireWorkforceApproval>
+            </RequireJoinWorkforceEligible>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'dashboard/workforce/payment',
+        element: (
+          <RequireAuth>
+            <RequirePaymentFlowAccess>
+              <PaymentPage />
+            </RequirePaymentFlowAccess>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'dashboard/workforce/upgrade',
+        element: (
+          <RequireAuth>
+            <RequireOnboardingComplete>
+              <RequireUpgradeMembership>
+                <UpgradeMembershipPage />
+              </RequireUpgradeMembership>
+            </RequireOnboardingComplete>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'dashboard/workforce/pending-review',
+        element: (
+          <RequireAuth>
+            <RequirePaymentFlowAccess>
+              <RequireWorkforcePaymentPending>
+                <WorkforcePendingReviewPage />
+              </RequireWorkforcePaymentPending>
+            </RequirePaymentFlowAccess>
           </RequireAuth>
         ),
       },
@@ -131,30 +199,67 @@ export const appRouter = createBrowserRouter([
         element: (
           <RequireAuth>
             <RequireOnboardingComplete>
-              <DashboardPage />
+              <RequireWorkforceApproval>
+                <DashboardPage />
+              </RequireWorkforceApproval>
             </RequireOnboardingComplete>
           </RequireAuth>
         ),
       },
       {
-        path: 'admin/onboarding-review',
+        path: 'dashboard/withdrawals',
         element: (
           <RequireAuth>
-            <RequireAdmin>
-              <AdminOnboardingReviewPage />
-            </RequireAdmin>
+            <RequireOnboardingComplete>
+              <RequireWorkforceApproval>
+                <WithdrawalPage />
+              </RequireWorkforceApproval>
+            </RequireOnboardingComplete>
           </RequireAuth>
         ),
       },
       {
-        path: 'admin/payment-settings',
+        path: 'dashboard/support',
         element: (
           <RequireAuth>
-            <RequireAdmin>
-              <AdminPaymentSettingsPage />
-            </RequireAdmin>
+            <SupportPage />
           </RequireAuth>
         ),
+      },
+      {
+        path: 'admin',
+        element: <Outlet />,
+        children: [
+          {
+            path: 'login',
+            element: <AdminLoginPage />,
+          },
+          {
+            path: '',
+            element: (
+              <RequireAuth redirectTo="/admin/login">
+                <RequireAdmin>
+                  <AdminLayout />
+                </RequireAdmin>
+              </RequireAuth>
+            ),
+            children: [
+              { index: true, element: <Navigate to="/admin/onboarding-review" replace /> },
+              { path: 'onboarding-review', element: <AdminOnboardingReviewPage /> },
+              { path: 'workforce-approval', element: <AdminWorkforceApprovalPage /> },
+              {
+                path: 'payment-settings',
+                element: <AdminPaymentSettingsLayout />,
+                children: [
+                  { index: true, element: <AdminPaymentSettingsPage /> },
+                  { path: 'deposit-addresses', element: <AdminPaymentDepositAddressesPage /> },
+                ],
+              },
+              { path: 'surveys', element: <AdminSurveysPage /> },
+              { path: 'withdrawals', element: <AdminWithdrawalsPage /> },
+            ],
+          },
+        ],
       },
       { path: '*', element: <NotFoundPage /> },
     ],

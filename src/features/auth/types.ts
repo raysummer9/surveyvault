@@ -8,8 +8,12 @@ export type UserProfile = {
   first_name: string | null
   last_name: string | null
   onboarding_status: OnboardingStatus
-  workforce_approved: boolean
+  /** False/null until admin approves workforce; treat missing as not approved */
+  workforce_approved?: boolean | null
   workforce_joined: boolean
+  workforce_payment_confirmed?: boolean
+  /** Set when admin rejects payment verification; cleared on new payment submit */
+  workforce_payment_rejection_reason?: string | null
   created_at: string
   updated_at: string
 }
@@ -87,6 +91,44 @@ export function hasJoinedWorkforce(profile: UserProfile | null | undefined) {
   return profile?.workforce_joined === true
 }
 
+/** User has paid and is waiting for admin to approve workforce access */
+export function hasPaymentConfirmedAwaitingApproval(profile: UserProfile | null | undefined) {
+  return (
+    Boolean(profile?.workforce_payment_confirmed) &&
+    profile?.workforce_approved !== true
+  )
+}
+
+/**
+ * May access pending-review route / enrollment step "Active" while a payment is in review.
+ * `authSeesPendingWorkforcePayment` is true when hydration loaded a `workforce_payments` row with status `pending`
+ * (covers stale `workforce_payment_confirmed`, profile read races, and `.maybeSingle()` errors when multiple pendings exist).
+ */
+export function hasWorkforcePaymentReviewAccess(
+  profile: UserProfile | null | undefined,
+  authSeesPendingWorkforcePayment: boolean,
+): boolean {
+  /** Upgrade: already in workforce but a new tier payment is pending admin review */
+  if (hasJoinedWorkforce(profile) && authSeesPendingWorkforcePayment) return true
+  if (hasJoinedWorkforce(profile)) return false
+  if (profile?.workforce_approved === true) return false
+  if (authSeesPendingWorkforcePayment) return true
+  return hasPaymentConfirmedAwaitingApproval(profile)
+}
+
+/** Admin rejected the last payment submission; user can submit again */
+export function hasWorkforcePaymentRejected(profile: UserProfile | null | undefined) {
+  const reason = profile?.workforce_payment_rejection_reason
+  return Boolean(reason && reason.trim().length > 0)
+}
+
+/** User can access Join Workforce page: onboarding approved, not yet in workforce */
+export function canAccessJoinWorkforce(profile: UserProfile | null | undefined) {
+  if (!profile) return false
+  if (profile.workforce_joined) return false
+  return profile.onboarding_status === 'approved'
+}
+
 export function canAccessOnboardingStep(
   step: OnboardingStepId,
   submission: OnboardingSubmission | null | undefined,
@@ -106,7 +148,7 @@ export function isWorkforceApproved(
   return (
     isOnboardingComplete(submission) &&
     (submission.is_address_complete || hasStepData('address', submission)) &&
-    profile.workforce_approved &&
+    profile.workforce_approved === true &&
     profile.onboarding_status === 'approved'
   )
 }

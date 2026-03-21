@@ -1,7 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IoCheckmarkCircleOutline, IoLogOutOutline, IoPersonOutline } from 'react-icons/io5'
+import { APP_NAME } from '../../config/brand'
+import { fetchMemberVerifiedMembershipTier, type MembershipTier } from '../../domain/paymentCategory'
 import { useAuth } from '../../features/auth/AuthContext'
+import { hasWorkforcePaymentReviewAccess } from '../../features/auth/types'
+import { MembershipTierBadge } from './MembershipTierBadge'
 
 type SidebarMemberCardProps = {
   onAfterLogout?: () => void
@@ -16,10 +20,30 @@ function getOnboardingStatusLabel(onboardingStatus: string | null | undefined) {
 
 export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
   const navigate = useNavigate()
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, pendingWorkforcePaymentRow } = useAuth()
+  const [membershipTier, setMembershipTier] = useState<MembershipTier | null>(null)
   const [confirmingLogout, setConfirmingLogout] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState('')
+
+  useEffect(() => {
+    if (!user?.id) {
+      setMembershipTier(null)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      try {
+        const tier = await fetchMemberVerifiedMembershipTier(user.id)
+        if (!cancelled) setMembershipTier(tier)
+      } catch {
+        if (!cancelled) setMembershipTier(null)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   const displayName = useMemo(() => {
     const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
@@ -28,7 +52,10 @@ export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
     return 'Member'
   }, [profile?.first_name, profile?.last_name, user?.email])
 
-  const onboardingStatusLabel = getOnboardingStatusLabel(profile?.onboarding_status)
+  const awaitingPaymentReview = hasWorkforcePaymentReviewAccess(profile, pendingWorkforcePaymentRow)
+  const onboardingStatusLabel = awaitingPaymentReview
+    ? 'Payment review'
+    : getOnboardingStatusLabel(profile?.onboarding_status)
   const isApproved = profile?.onboarding_status === 'approved'
 
   const handleConfirmLogout = async () => {
@@ -50,8 +77,9 @@ export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
       <div className={`onboarding-member ${isApproved ? 'onboarding-member-approved' : ''}`}>
         <div className="onboarding-member-main">
           {isApproved ? <IoCheckmarkCircleOutline className="onboarding-member-approved-icon" /> : <IoPersonOutline />}
-          <div>
+          <div className="onboarding-member-text">
             <p>{displayName}</p>
+            {membershipTier ? <MembershipTierBadge tier={membershipTier} variant="sidebar" /> : null}
             <small>{onboardingStatusLabel}</small>
           </div>
         </div>
@@ -84,7 +112,9 @@ export function SidebarMemberCard({ onAfterLogout }: SidebarMemberCardProps) {
             aria-label="Confirm logout"
             onClick={(event) => event.stopPropagation()}
           >
-            <p>Log out from SurveyVault?</p>
+            <p>
+              Log out from {APP_NAME}?
+            </p>
             <small>Your current session will end on this device.</small>
             {logoutError && <span>{logoutError}</span>}
             <div className="logout-toast-actions">

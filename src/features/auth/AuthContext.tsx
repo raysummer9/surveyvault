@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -36,12 +37,22 @@ type AuthContextValue = {
     lastProfileRowCount: number | null
     lastOnboardingRowCount: number | null
   }
+  /** True after profile/onboarding hydration finishes for the current user (or no session). Route guards use with `loading`. */
+  profileReady: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: SignUpInput) => Promise<void>
   signOut: () => Promise<void>
   requestPasswordReset: (email: string) => Promise<void>
   updatePassword: (nextPassword: string) => Promise<void>
   refreshUserState: () => Promise<void>
+  /** Merge into cached profile immediately (e.g. after a successful DB update) so route guards see new state before the next async refresh. */
+  patchProfile: (patch: Partial<UserProfile>) => void
+  /**
+   * Hydration found at least one `workforce_payments` row with status `pending` for this user
+   * (first-time enrollment or membership upgrade). Used by route guards when
+   * `user_profiles.workforce_payment_confirmed` is stale or profile was slow to load.
+   */
+  pendingWorkforcePaymentRow: boolean
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
@@ -98,23 +109,42 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [lastHydrationError, setLastHydrationError] = useState<string | null>(null)
   const [lastProfileRowCount, setLastProfileRowCount] = useState<number | null>(null)
   const [lastOnboardingRowCount, setLastOnboardingRowCount] = useState<number | null>(null)
+  /** False until first `loadUserState` for the current session user finishes (avoids route guards firing with null profile/onboarding). */
+  const [profileReady, setProfileReady] = useState(false)
+  const [pendingWorkforcePaymentRow, setPendingWorkforcePaymentRow] = useState(false)
+  const lastHydratedUserIdRef = useRef<string | null>(null)
+  /** Tracks last processed session user id (auth callbacks). */
+  const sessionUserIdRef = useRef<string | null>(null)
+  /** Serialize profile hydration so concurrent `loadUserState` calls cannot interleave (stale guards / stuck spinners). */
+  const hydrationQueueRef = useRef(Promise.resolve())
 
   const loadUserState = useCallback(async (authUser: User | null) => {
     if (!isSupabaseConfigured || !supabase) {
+      lastHydratedUserIdRef.current = null
       setProfile(null)
       setOnboarding(null)
+      setPendingWorkforcePaymentRow(false)
       setLastHydrationError(null)
       setLastProfileRowCount(null)
       setLastOnboardingRowCount(null)
+      setProfileReady(true)
       return
     }
     if (!authUser) {
+      lastHydratedUserIdRef.current = null
       setProfile(null)
       setOnboarding(null)
+      setPendingWorkforcePaymentRow(false)
       setLastHydrationError(null)
       setLastProfileRowCount(null)
       setLastOnboardingRowCount(null)
+      setProfileReady(true)
       return
+    }
+
+    // Re-fetch for a different user, or first load after refresh — block guards until this run completes.
+    if (lastHydratedUserIdRef.current !== authUser.id) {
+      setProfileReady(false)
     }
 
     try {
@@ -151,7 +181,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setLastProfileRowCount(profileResult.data?.length ?? 0)
       setLastOnboardingRowCount(onboardingResult.data?.length ?? 0)
 
-      const nextProfile = (profileResult.data?.[0] as UserProfile | undefined) ?? null
+      const rawProfileRow = profileResult.data?.[0] as UserProfile | undefined
+      let nextProfile = rawProfileRow ?? null
       const rawOnboarding = (onboardingResult.data?.[0] as OnboardingSubmission | undefined) ?? null
       const nextOnboarding = normalizeOnboardingSubmission(rawOnboarding)
       setLastHydrationError(
@@ -162,11 +193,88 @@ export function AuthProvider({ children }: PropsWithChildren) {
             : null),
       )
 
-      // Keep previously loaded state if one side fails transiently.
-      setProfile((prev) => nextProfile ?? prev ?? null)
+      // Source of truth: a pending workforce_payments row means enrollment step 4 (Active) even if
+      // user_profiles.workforce_payment_confirmed is stale or the profile read briefly failed.
+      // Do NOT use .maybeSingle() — multiple pending rows (retries) returns PGRST116 and breaks the merge.
+      const { data: pendingRows, error: pendingErr } = await supabase
+        .from('workforce_payments')
+        .select('id')
+        .eq('user_id', authUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      const pendingPay = pendingRows?.[0]
+      const pendingWorkforcePaymentId =
+        !pendingErr && pendingPay?.id ? String(pendingPay.id) : null
+
+      const enrollmentAwaitingPaymentReview =
+        Boolean(pendingWorkforcePaymentId) &&
+        nextProfile?.workforce_approved !== true &&
+        nextProfile?.workforce_joined !== true
+
+      if (enrollmentAwaitingPaymentReview && nextProfile) {
+        nextProfile = { ...nextProfile, workforce_payment_confirmed: true }
+        if (!rawProfileRow?.workforce_payment_confirmed) {
+          void supabase
+            .from('user_profiles')
+            .update({ workforce_payment_confirmed: true })
+            .eq('id', authUser.id)
+        }
+      } else if (pendingWorkforcePaymentId && !nextProfile) {
+        // Rare race: payment row exists but profile select returned empty — retry once.
+        const { data: retryRows } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+        const retryRow = retryRows?.[0] as UserProfile | undefined
+        if (
+          retryRow &&
+          retryRow.workforce_approved !== true &&
+          retryRow.workforce_joined !== true
+        ) {
+          nextProfile = { ...retryRow, workforce_payment_confirmed: true }
+          if (!retryRow.workforce_payment_confirmed) {
+            void supabase
+              .from('user_profiles')
+              .update({ workforce_payment_confirmed: true })
+              .eq('id', authUser.id)
+          }
+        }
+      }
+
+      // Pending enrollment (not joined yet) OR pending membership upgrade (joined + new payment row).
+      const allowPendingWorkforceReview =
+        Boolean(pendingWorkforcePaymentId) &&
+        ((nextProfile?.workforce_approved !== true && nextProfile?.workforce_joined !== true) ||
+          nextProfile?.workforce_joined === true)
+
+      // If the pending query errored (RLS/network), don't wipe an optimistic true from patchProfile().
+      setPendingWorkforcePaymentRow((prev) => {
+        if (allowPendingWorkforceReview) return true
+        if (pendingErr) return prev
+        return false
+      })
+
+      // Keep previously loaded state if one side fails transiently; merge pending-payment enrollment.
+      setProfile((prev) => {
+        const base = nextProfile ?? prev ?? null
+        if (!base) return null
+        if (
+          pendingWorkforcePaymentId &&
+          base.workforce_approved !== true &&
+          base.workforce_joined !== true
+        ) {
+          return { ...base, workforce_payment_confirmed: true }
+        }
+        return base
+      })
       setOnboarding((prev) => nextOnboarding ?? prev ?? null)
 
-      // Auto-heal stale completion flags/status in DB when payloads indicate completion.
+      // Auto-heal in the background — never block hydration on these writes (slow/hanging RLS was tripping the 25s watchdog).
+      const uid = authUser.id
       if (rawOnboarding && nextOnboarding) {
         const onboardingChanged =
           rawOnboarding.is_profile_complete !== nextOnboarding.is_profile_complete ||
@@ -177,7 +285,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           rawOnboarding.current_step !== nextOnboarding.current_step
 
         if (onboardingChanged) {
-          const { error: updateOnboardingError } = await supabase
+          void supabase
             .from('onboarding_submissions')
             .update({
               is_profile_complete: nextOnboarding.is_profile_complete,
@@ -187,40 +295,85 @@ export function AuthProvider({ children }: PropsWithChildren) {
               is_onboarding_complete: nextOnboarding.is_onboarding_complete,
               current_step: nextOnboarding.current_step,
             })
-            .eq('user_id', authUser.id)
-
-          if (updateOnboardingError) {
-            console.error('[AuthProvider] Failed to auto-heal onboarding flags', updateOnboardingError)
-          }
+            .eq('user_id', uid)
+            .then(({ error: updateOnboardingError }) => {
+              if (updateOnboardingError) {
+                console.error('[AuthProvider] Failed to auto-heal onboarding flags', updateOnboardingError)
+              }
+            })
         }
       }
 
       if (nextProfile && nextOnboarding?.is_onboarding_complete && nextProfile.onboarding_status === 'in_progress') {
-        const { error: updateProfileError } = await supabase
+        void supabase
           .from('user_profiles')
           .update({ onboarding_status: 'completed' })
-          .eq('id', authUser.id)
-
-        if (updateProfileError) {
-          console.error('[AuthProvider] Failed to auto-heal profile onboarding status', updateProfileError)
-        } else {
-          setProfile((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  onboarding_status: 'completed',
-                }
-              : prev,
-          )
-        }
+          .eq('id', uid)
+          .then(({ error: updateProfileError }) => {
+            if (updateProfileError) {
+              console.error('[AuthProvider] Failed to auto-heal profile onboarding status', updateProfileError)
+            } else {
+              setProfile((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      onboarding_status: 'completed',
+                    }
+                  : prev,
+              )
+            }
+          })
       }
+      lastHydratedUserIdRef.current = authUser.id
+      setProfileReady(true)
     } catch (error) {
       console.error('[AuthProvider] Failed to load user state', error)
       setLastHydrationError(error instanceof Error ? error.message : 'Unknown hydration error')
       setProfile((prev) => prev ?? null)
       setOnboarding((prev) => prev ?? null)
+      setPendingWorkforcePaymentRow(false)
+      setProfileReady(true)
     }
   }, [])
+
+  const enqueueHydration = useCallback(
+    async (authUser: User | null) => {
+      const run = hydrationQueueRef.current.then(() => loadUserState(authUser))
+      hydrationQueueRef.current = run.catch(() => undefined)
+      await run
+    },
+    [loadUserState],
+  )
+
+  const patchProfile = useCallback(
+    (patch: Partial<UserProfile>) => {
+      setProfile((prev) => {
+        if (prev) return { ...prev, ...patch }
+        // Payment submit can run before hydration loads user_profiles; merge onto a minimal row
+        // so RequireWorkforcePaymentPending sees workforce_payment_confirmed.
+        if (!user?.id || patch.workforce_payment_confirmed !== true) return prev
+        return {
+          id: user.id,
+          email: user.email ?? null,
+          first_name: null,
+          last_name: null,
+          onboarding_status: 'approved',
+          workforce_joined: false,
+          workforce_approved: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...patch,
+        } as UserProfile
+      })
+      if (patch.workforce_payment_confirmed === true) {
+        setPendingWorkforcePaymentRow(true)
+      }
+      if (patch.workforce_payment_confirmed === false) {
+        setPendingWorkforcePaymentRow(false)
+      }
+    },
+    [user],
+  )
 
   const refreshUserState = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) return
@@ -229,21 +382,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
         data: { user: currentUser },
       } = await supabase.auth.getUser()
       setUser(currentUser)
-      await loadUserState(currentUser)
+      await enqueueHydration(currentUser)
     } catch (error) {
       console.error('[AuthProvider] Failed to refresh user state', error)
       setUser(null)
       setProfile(null)
       setOnboarding(null)
+      setPendingWorkforcePaymentRow(false)
+      lastHydratedUserIdRef.current = null
+      setProfileReady(true)
     }
-  }, [loadUserState])
+  }, [enqueueHydration])
 
   useEffect(() => {
-    let mounted = true
+    let cancelled = false
 
     const initialize = async () => {
       if (!isSupabaseConfigured || !supabase) {
-        if (!mounted) return
+        setProfileReady(true)
         setLoading(false)
         return
       }
@@ -253,63 +409,115 @@ export function AuthProvider({ children }: PropsWithChildren) {
           data: { session: initialSession },
         } = await supabase.auth.getSession()
 
-        if (!mounted) return
+        if (cancelled) {
+          setProfileReady(true)
+          setLoading(false)
+          return
+        }
+
         setSession(initialSession)
-        setUser(initialSession?.user ?? null)
+        const initialUser = initialSession?.user ?? null
+        setUser(initialUser)
+        sessionUserIdRef.current = initialUser?.id ?? null
+
+        // Keep profileReady false when signed in until `loadUserState` finishes (guards must not run with null profile).
+        if (!initialUser) {
+          setProfileReady(true)
+        }
+
+        // Unblock the router *before* profile hydration. If Supabase reads hang, we still must not spin forever on "Loading…".
         setLoading(false)
-        void loadUserState(initialSession?.user ?? null)
+
+        // Never await — GoTrue can block signInWithPassword until this bootstrap path finishes; awaiting DB work can deadlock login after HTTP 200.
+        void enqueueHydration(initialUser).catch((e) =>
+          console.error('[AuthProvider] Initial profile hydration failed', e),
+        )
       } catch (error) {
         console.error('[AuthProvider] Initialization failed', error)
-        if (mounted) {
+        if (!cancelled) {
           setSession(null)
           setUser(null)
           setProfile(null)
           setOnboarding(null)
+          sessionUserIdRef.current = null
+          lastHydratedUserIdRef.current = null
+          setProfileReady(true)
           setLoading(false)
         }
       }
     }
 
-    initialize()
+    void initialize()
 
     if (!isSupabaseConfigured || !supabase) {
       return () => {
-        mounted = false
+        cancelled = true
       }
     }
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      if (!mounted) return
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (cancelled) return
+
+      // Keep access token in sync without re-hydrating profile (avoids duplicate loadUserState vs `initialize`).
+      if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        setSession(nextSession)
+        return
+      }
+
+      const nextUser = nextSession?.user ?? null
+      sessionUserIdRef.current = nextUser?.id ?? null
+
+      // Sync React state immediately; hydrate in the background.
+      // IMPORTANT: Do not `await` inside this callback — GoTrue may wait for subscribers before resolving
+      // `signInWithPassword`, so awaiting Supabase REST calls here deadlocks the login button after HTTP 200.
       try {
         setSession(nextSession)
-        setUser(nextSession?.user ?? null)
-        setLoading(false)
-        void loadUserState(nextSession?.user ?? null)
+        setUser(nextUser)
+        void enqueueHydration(nextUser).catch((error) => {
+          console.error('[AuthProvider] Auth state change hydration failed', error)
+          if (!cancelled) {
+            setProfileReady(true)
+          }
+        })
       } catch (error) {
         console.error('[AuthProvider] Auth state change handling failed', error)
-        if (mounted) {
+        if (!cancelled) {
           setSession(null)
           setUser(null)
           setProfile(null)
           setOnboarding(null)
-          setLoading(false)
+          sessionUserIdRef.current = null
+          lastHydratedUserIdRef.current = null
+          setProfileReady(true)
         }
       }
     })
 
     return () => {
-      mounted = false
+      cancelled = true
       subscription.unsubscribe()
     }
-  }, [loadUserState])
+  }, [enqueueHydration])
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const client = assertSupabaseConfigured()
-    const { error } = await client.auth.signInWithPassword({ email, password })
-    if (error) throw error
-  }, [])
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const client = assertSupabaseConfigured()
+      const { data, error } = await client.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      const session = data.session
+      const signedInUser = session?.user ?? null
+      setProfileReady(false)
+      setSession(session ?? null)
+      setUser(signedInUser)
+      sessionUserIdRef.current = signedInUser?.id ?? null
+      void enqueueHydration(signedInUser).catch((e) =>
+        console.error('[AuthProvider] Post-sign-in hydration failed', e),
+      )
+    },
+    [enqueueHydration],
+  )
 
   const signUp = useCallback(async ({ email, password, firstName, lastName }: SignUpInput) => {
     const client = assertSupabaseConfigured()
@@ -354,6 +562,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       onboarding,
       loading,
       configured: isSupabaseConfigured,
+      profileReady,
       debug: {
         lastHydrationError,
         lastProfileRowCount,
@@ -365,6 +574,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestPasswordReset,
       updatePassword,
       refreshUserState,
+      patchProfile,
+      pendingWorkforcePaymentRow,
     }),
     [
       session,
@@ -372,6 +583,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       profile,
       onboarding,
       loading,
+      profileReady,
       lastHydrationError,
       lastProfileRowCount,
       lastOnboardingRowCount,
@@ -381,6 +593,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestPasswordReset,
       updatePassword,
       refreshUserState,
+      patchProfile,
+      pendingWorkforcePaymentRow,
     ],
   )
 

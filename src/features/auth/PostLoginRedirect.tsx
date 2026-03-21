@@ -1,24 +1,32 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
-import { isAdminApproved, hasJoinedWorkforce } from './types'
+import {
+  canAccessJoinWorkforce,
+  hasJoinedWorkforce,
+  hasWorkforcePaymentReviewAccess,
+} from './types'
 
 /**
  * Redirects authenticated users to the appropriate dashboard route based on
  * onboarding/approval/joined state. Used as the dashboard index and after sign-in.
  */
 export function PostLoginRedirect() {
-  const { loading, user, profile } = useAuth()
+  const { loading, profile, pendingWorkforcePaymentRow, profileReady } = useAuth()
 
-  // Wait for profile to load when authenticated (loadUserState runs async after auth change)
-  if (loading || (user && profile === null)) {
+  if (loading || !profileReady) {
     return <section style={{ padding: '24px' }}>Loading...</section>
   }
 
-  if (isAdminApproved(profile)) {
-    if (hasJoinedWorkforce(profile)) {
-      return <Navigate to="/dashboard/earnings" replace />
-    }
-    return <Navigate to="/dashboard/workforce/join" replace />
+  if (hasWorkforcePaymentReviewAccess(profile, pendingWorkforcePaymentRow)) {
+    return <Navigate to="/dashboard/workforce/pending-review" replace />
+  }
+
+  if (hasJoinedWorkforce(profile)) {
+    return <Navigate to="/dashboard/earnings" replace />
+  }
+
+  if (canAccessJoinWorkforce(profile)) {
+    return <Navigate to="/dashboard/onboarding" replace />
   }
 
   return <Navigate to="/dashboard/onboarding" replace />

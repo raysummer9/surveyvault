@@ -51,7 +51,7 @@ export function ResetPasswordPage() {
       <section className="login-form-wrap">
         <div className="login-card">
           <h2>Choose a new password</h2>
-          <p className="subtle">Set a strong password to secure your SurveyVault account.</p>
+          <p className="subtle">Set a strong password to secure your Taskpulse account.</p>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <label htmlFor="new-password">

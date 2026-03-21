@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight } from 'react-icons/fi'
@@ -70,7 +70,7 @@ const benefits = [
 
 export function RegisterPage() {
   const navigate = useNavigate()
-  const { signUp } = useAuth()
+  const { signUp, user, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [firstName, setFirstName] = useState('')
@@ -92,6 +92,18 @@ export function RegisterPage() {
 
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
+
+  if (loading) {
+    return (
+      <section className="login-layout register-layout" style={{ padding: '48px 24px', textAlign: 'center' }}>
+        Loading…
+      </section>
+    )
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -156,13 +168,13 @@ export function RegisterPage() {
       <aside className="login-hero register-hero">
         <div className="login-hero-brand">
           <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
+          <span>Taskpulse</span>
         </div>
         <h1>
           Your voice is <span className="register-heading-accent">worth more</span> than you think.
         </h1>
         <p className="register-desc">
-          Join SurveyVault and start earning real cash by sharing your opinions. It takes less than 2
+          Join Taskpulse and start earning real cash by sharing your opinions. It takes less than 2
           minutes to get started.
         </p>
 

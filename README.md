@@ -26,7 +26,7 @@ npm run dev
 - `/workforce/join` - one-time payment screen
 - `/surveys` - survey list
 - `/dashboard` - earnings overview
-- `/admin/payment-settings` - admin-controlled payment settings (frontend placeholder)
+- `/admin/payment-settings` - admin CRUD for workforce payment categories (plans); users load plans from Supabase `payment_categories`
 
 ## Project Structure
 
@@ -53,6 +53,6 @@ src/
 
 ## Notes For Backend Integration
 
-- `src/domain/paymentConfig.ts` is currently mocked and should be replaced with API-driven admin values.
-- Workforce joining fee is modeled as a category + one-time price.
-- Payment action buttons are placeholders; wire to your payment provider once backend endpoints exist.
+- Workforce membership plans live in Supabase table `payment_categories` (see `supabase/migrations/20260319_payment_categories.sql`). Run migrations locally / on hosted Supabase.
+- `src/domain/paymentCategory.ts` loads plans for users; admins manage them in the app under **Payment settings**.
+- `src/domain/paymentConfig.ts` holds static crypto deposit addresses and payment window duration only.

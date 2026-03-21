@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { useAuth } from '../../features/auth/AuthContext'
+import { APP_NAME } from '../../config/brand'
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
@@ -9,9 +11,13 @@ const navItems = [
 ]
 
 export function AppLayout() {
+  const { user } = useAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDashboardRoute = location.pathname.startsWith('/dashboard')
+  const isAdminRoute = location.pathname.startsWith('/admin')
+  /** Hide public marketing header (same as dashboard) — admin uses its own sidebar layout. */
+  const hidePublicNavbar = isDashboardRoute || isAdminRoute
 
   const closeSidebar = () => setSidebarOpen(false)
 
@@ -34,12 +40,12 @@ export function AppLayout() {
 
   return (
     <div className="public-shell">
-      {!isDashboardRoute && (
+      {!hidePublicNavbar && (
         <>
           <header className="public-navbar">
             <Link className="brand-link" to="/" onClick={closeSidebar}>
               <span className="brand-icon">S</span>
-              <span className="brand-text">SurveyVault</span>
+              <span className="brand-text">{APP_NAME}</span>
             </Link>
 
             <nav className="public-nav" aria-label="Main navigation">
@@ -56,12 +62,20 @@ export function AppLayout() {
             </nav>
 
             <div className="public-actions">
-              <Link className="public-btn secondary" to="/sign-in">
-                Login
-              </Link>
-              <Link className="public-btn primary" to="/register">
-                Join Free
-              </Link>
+              {user ? (
+                <Link className="public-btn primary" to="/dashboard">
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link className="public-btn secondary" to="/sign-in">
+                    Login
+                  </Link>
+                  <Link className="public-btn primary" to="/register">
+                    Join Free
+                  </Link>
+                </>
+              )}
             </div>
 
             <button
@@ -108,18 +122,26 @@ export function AppLayout() {
               ))}
             </nav>
             <div className="sidebar-actions">
-              <Link className="public-btn secondary" to="/sign-in" onClick={closeSidebar}>
-                Login
-              </Link>
-              <Link className="public-btn primary" to="/register" onClick={closeSidebar}>
-                Join Free
-              </Link>
+              {user ? (
+                <Link className="public-btn primary" to="/dashboard" onClick={closeSidebar}>
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link className="public-btn secondary" to="/sign-in" onClick={closeSidebar}>
+                    Login
+                  </Link>
+                  <Link className="public-btn primary" to="/register" onClick={closeSidebar}>
+                    Join Free
+                  </Link>
+                </>
+              )}
             </div>
           </aside>
         </>
       )}
 
-      <main className={isDashboardRoute ? 'public-content no-navbar' : 'public-content'}>
+      <main className={hidePublicNavbar ? 'public-content no-navbar' : 'public-content'}>
         <Outlet />
       </main>
     </div>

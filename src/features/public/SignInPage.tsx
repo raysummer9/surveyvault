@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { FiArrowRight, FiUser } from 'react-icons/fi'
@@ -13,17 +13,27 @@ const signInSchema = z.object({
   password: z.string().min(1, 'Password is required.'),
 })
 
-const SIGN_IN_TIMEOUT_MS = 15000
-
 export function SignInPage() {
   const navigate = useNavigate()
-  const { signIn } = useAuth()
+  const { signIn, user, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  if (loading) {
+    return (
+      <section className="login-layout" style={{ padding: '48px 24px', textAlign: 'center' }}>
+        Loading…
+      </section>
+    )
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -45,12 +55,7 @@ export function SignInPage() {
     setFieldErrors({})
     setSubmitting(true)
     try {
-      await Promise.race([
-        signIn(parsed.data.email, parsed.data.password),
-        new Promise<never>((_, reject) => {
-          window.setTimeout(() => reject(new Error('Sign in timed out. Please try again.')), SIGN_IN_TIMEOUT_MS)
-        }),
-      ])
+      await signIn(parsed.data.email, parsed.data.password)
       // Auth session is established by Supabase. Profile hydration runs in AuthProvider.
       // PostLoginRedirect will send approved users to workforce or dashboard based on joined state.
       navigate('/dashboard')
@@ -67,7 +72,7 @@ export function SignInPage() {
       <aside className="login-hero">
         <div className="login-hero-brand">
           <span className="brand-icon">S</span>
-          <span>SurveyVault</span>
+          <span>Taskpulse</span>
         </div>
         <h1>
           Welcome back.
@@ -191,7 +196,7 @@ export function SignInPage() {
 
             <button className="auth-submit" type="submit" disabled={submitting}>
               <FiUser />
-              {submitting ? 'Signing in...' : 'Sign In to SurveyVault'}
+              {submitting ? 'Signing in...' : 'Sign In to Taskpulse'}
             </button>
           </form>
 

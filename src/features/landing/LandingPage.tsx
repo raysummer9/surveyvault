@@ -136,7 +136,7 @@ const stats = [
 const testimonials = [
   {
     quote:
-      "I've been using SurveyVault for 6 months and have earned over $800. The surveys are relevant and the payouts are fast. Highly recommend to anyone looking for extra income.",
+      "I've been using Taskpulse for 6 months and have earned over $800. The surveys are relevant and the payouts are fast. Highly recommend to anyone looking for extra income.",
     name: 'Sarah Mitchell',
     tier: 'Gold Member',
     earned: '$847 earned',
@@ -176,7 +176,7 @@ const testimonials = [
   },
   {
     quote:
-      "SurveyVault's tier system motivated me to stay consistent. Now I'm Platinum and the higher-paying surveys are worth the effort.",
+      "Taskpulse's tier system motivated me to stay consistent. Now I'm Platinum and the higher-paying surveys are worth the effort.",
     name: 'David Okonkwo',
     tier: 'Platinum Member',
     earned: '$1,890 earned',
@@ -200,7 +200,7 @@ const testimonials = [
   },
   {
     quote:
-      "Referred three friends and we're all earning. The 10% bonus adds up. SurveyVault has become my go-to side hustle.",
+      "Referred three friends and we're all earning. The 10% bonus adds up. Taskpulse has become my go-to side hustle.",
     name: 'Jordan Williams',
     tier: 'Platinum Member',
     earned: '$2,100 earned',
@@ -215,10 +215,10 @@ const faqItems = [
   {
     question: 'Is creating an account free?',
     answer:
-      'Yes. Creating a SurveyVault account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.',
+      'Yes. Creating a Taskpulse account is completely free. A small one-time fee is required to join the workforce and unlock paid survey opportunities. There are no monthly subscriptions or hidden charges.',
   },
   {
-    question: 'How much can I earn with SurveyVault?',
+    question: 'How much can I earn with Taskpulse?',
     answer:
       'Earnings vary by survey length and complexity. Most surveys pay between $1–$50, with typical payouts of $3–$5 for 10–15 minute surveys. Active members can earn $100–$500+ per month depending on their availability and survey eligibility.',
   },
@@ -459,7 +459,7 @@ export function LandingPage() {
         <span className="landing-testimonials-badge">Testimonials</span>
         <h2 className="landing-testimonials-title">What our experts say</h2>
         <p className="landing-testimonials-subtitle">
-          Real stories from real members who are earning with SurveyVault.
+          Real stories from real members who are earning with Taskpulse.
         </p>
         <div className="landing-testimonials-slider">
           <div
@@ -508,7 +508,7 @@ export function LandingPage() {
         <span className="landing-faq-badge">FAQ</span>
         <h2 className="landing-faq-title">Frequently asked questions</h2>
         <p className="landing-faq-subtitle">
-          Everything you need to know about SurveyVault.
+          Everything you need to know about Taskpulse.
         </p>
         <div className="landing-faq-list">
           {faqItems.map((item, i) => {
@@ -553,13 +553,13 @@ export function LandingPage() {
           <div className="landing-footer-brand">
             <Link to="/" className="landing-footer-logo">
               <span className="landing-footer-logo-icon">S</span>
-              <span className="landing-footer-logo-text">SurveyVault</span>
+              <span className="landing-footer-logo-text">Taskpulse</span>
             </Link>
             <p className="landing-footer-tagline">
               The most trusted survey platform for earning real rewards. Your opinion shapes the
               future.
             </p>
-            <p className="landing-footer-copyright">© 2024 SurveyVault. All rights reserved.</p>
+            <p className="landing-footer-copyright">© 2024 Taskpulse. All rights reserved.</p>
           </div>
           <nav className="landing-footer-nav" aria-label="Platform links">
             <h3 className="landing-footer-heading">Platform</h3>

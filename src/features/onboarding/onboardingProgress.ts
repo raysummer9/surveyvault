@@ -4,7 +4,7 @@ type OnboardingProgress = {
   completedSteps: OnboardingStepId[]
 }
 
-const STORAGE_KEY = 'surveyvault.onboardingProgress'
+const STORAGE_KEY = 'taskpulse.onboardingProgress'
 
 const defaultProgress: OnboardingProgress = {
   completedSteps: [],

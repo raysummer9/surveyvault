@@ -3,11 +3,14 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import {
   canAccessOnboardingStep,
+  canAccessJoinWorkforce,
   isAdminApproved,
   isOnboardingRejected,
   isProfileMarkedOnboardingComplete,
   isOnboardingComplete,
   isWorkforceApproved,
+  hasWorkforcePaymentReviewAccess,
+  hasJoinedWorkforce,
   type OnboardingStepId,
 } from './types'
 
@@ -24,8 +27,10 @@ const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS ?? '')
   .map((email: string) => email.trim().toLowerCase())
   .filter(Boolean)
 
-export function RequireAuth({ children }: GuardProps) {
-  const { loading, user, configured } = useAuth()
+type RequireAuthProps = GuardProps & { redirectTo?: string }
+
+export function RequireAuth({ children, redirectTo = '/sign-in' }: RequireAuthProps) {
+  const { loading, user, configured, profileReady } = useAuth()
   if (!configured) {
     return (
       <section style={{ padding: '24px' }}>
@@ -35,7 +40,8 @@ export function RequireAuth({ children }: GuardProps) {
     )
   }
   if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
-  if (!user) return <Navigate to="/sign-in" replace />
+  if (!user) return <Navigate to={redirectTo} replace />
+  if (!profileReady) return <section style={{ padding: '24px' }}>Loading...</section>
   return children
 }
 
@@ -81,6 +87,70 @@ export function RequireWorkforceApproval({ children }: GuardProps) {
   return children
 }
 
+/** First-time workforce enrollment only — joined members are redirected to upgrade. */
+export function RequireJoinWorkforceEligible({ children }: GuardProps) {
+  const { loading, profile } = useAuth()
+  if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (!profile) return <Navigate to="/sign-in" replace />
+  if (isOnboardingRejected(profile)) {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
+  if (hasJoinedWorkforce(profile)) {
+    return <Navigate to="/dashboard/workforce/upgrade" replace />
+  }
+  if (!canAccessJoinWorkforce(profile)) {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
+  return children
+}
+
+/**
+ * Join flow or upgrade payment: onboarding approved and either not yet joined (enrollment) or
+ * already in the workforce (tier upgrade).
+ */
+export function RequirePaymentFlowAccess({ children }: GuardProps) {
+  const { loading, profile } = useAuth()
+  if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (!profile) return <Navigate to="/sign-in" replace />
+  if (isOnboardingRejected(profile)) {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
+  if (profile.onboarding_status !== 'approved') {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
+  if (hasJoinedWorkforce(profile) || canAccessJoinWorkforce(profile)) {
+    return children
+  }
+  return <Navigate to="/dashboard/onboarding" replace />
+}
+
+/** Member must be fully approved and already in the workforce (tier upgrade page). */
+export function RequireUpgradeMembership({ children }: GuardProps) {
+  const { loading, profile, onboarding } = useAuth()
+  if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (!isWorkforceApproved(profile, onboarding)) {
+    return <Navigate to="/dashboard/onboarding" replace />
+  }
+  if (!hasJoinedWorkforce(profile)) {
+    return <Navigate to="/dashboard/workforce/join" replace />
+  }
+  return children
+}
+
+/** User must have submitted payment and be waiting for admin (pending-review page). */
+export function RequireWorkforcePaymentPending({ children }: GuardProps) {
+  const { loading, profile, pendingWorkforcePaymentRow } = useAuth()
+  if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
+  if (hasJoinedWorkforce(profile)) {
+    if (pendingWorkforcePaymentRow) return children
+    return <Navigate to="/dashboard/earnings" replace />
+  }
+  if (!hasWorkforcePaymentReviewAccess(profile, pendingWorkforcePaymentRow)) {
+    return <Navigate to="/dashboard/workforce/join" replace />
+  }
+  return children
+}
+
 export function RequireAdmin({ children }: GuardProps) {
   const { loading, user } = useAuth()
   if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
@@ -96,7 +166,7 @@ export function RequireAdmin({ children }: GuardProps) {
 
   const currentEmail = user?.email?.toLowerCase() ?? ''
   if (!adminEmails.includes(currentEmail)) {
-    return <Navigate to="/dashboard/onboarding" replace />
+    return <Navigate to="/admin/login" replace />
   }
   return children
 }

@@ -4,7 +4,7 @@ import { assertSupabaseConfigured } from '../../lib/supabase'
 import { useAuth } from '../auth/AuthContext'
 import { isOnboardingComplete, type OnboardingSubmission, type UserProfile } from '../auth/types'
 import { getOnboardingFileSignedUrl } from '../onboarding/onboardingStorage'
-import { PageSection } from '../../shared/ui/PageSection'
+import { AdminPageSection } from '../../shared/ui/AdminPageSection'
 
 type ReviewRow = {
   userId: string
@@ -228,7 +228,7 @@ export function AdminOnboardingReviewPage() {
         .from('user_profiles')
         .update({
           onboarding_status: approved ? 'approved' : 'rejected',
-          workforce_approved: approved,
+          // workforce_approved is set later by admin after payment is confirmed (AdminWorkforceApprovalPage)
         })
         .eq('id', userId)
 
@@ -277,7 +277,7 @@ export function AdminOnboardingReviewPage() {
   )
 
   return (
-    <PageSection
+    <AdminPageSection
       title="Admin: Onboarding Review"
       description="Review each member's submitted onboarding information and approve or reject access."
     >
@@ -362,6 +362,6 @@ export function AdminOnboardingReviewPage() {
           })}
         </div>
       )}
-    </PageSection>
+    </AdminPageSection>
   )
 }
