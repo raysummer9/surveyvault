@@ -25,9 +25,11 @@ export function PostLoginRedirect() {
     return <Navigate to="/dashboard/earnings" replace />
   }
 
+  /** Onboarding approved but not in workforce yet — continue enrollment at Join Workforce (then payment). */
   if (canAccessJoinWorkforce(profile)) {
-    return <Navigate to="/dashboard/onboarding" replace />
+    return <Navigate to="/dashboard/workforce/join" replace />
   }
 
+  /** Still in onboarding, pending approval, rejected, etc. */
   return <Navigate to="/dashboard/onboarding" replace />
 }
