@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { FaFacebookF, FaLock, FaShieldAlt } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
@@ -18,6 +18,7 @@ import { z } from 'zod'
 import { APP_NAME } from '../../config/brand'
 import { formatAuthErrorMessage } from '../../lib/authErrorMessages'
 import { useAuth } from '../auth/AuthContext'
+import { VerifyEmailModal } from './VerifyEmailModal'
 
 const registerSchema = z
   .object({
@@ -91,6 +92,8 @@ export function RegisterPage() {
   }>({})
   const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
@@ -103,9 +106,34 @@ export function RegisterPage() {
     )
   }
 
-  if (user) {
+  // After signup, Supabase may create a session immediately (e.g. if confirm email is off).
+  // Keep the user on this screen until they dismiss the verify-email modal.
+  if (user && !verifyModalOpen) {
     return <Navigate to="/dashboard" replace />
   }
+
+  const handleVerifyModalContinue = useCallback(() => {
+    setVerifyModalOpen(false)
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    } else {
+      navigate('/sign-in', { replace: true })
+    }
+  }, [navigate, user])
+
+  useEffect(() => {
+    if (!verifyModalOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleVerifyModalContinue()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [verifyModalOpen, handleVerifyModalContinue])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -156,7 +184,8 @@ export function RegisterPage() {
         email: parsed.data.email,
         password: parsed.data.password,
       })
-      navigate('/sign-in')
+      setRegisteredEmail(parsed.data.email)
+      setVerifyModalOpen(true)
     } catch (registerError) {
       setSubmitError(formatAuthErrorMessage(registerError, 'Unable to create account.'))
     } finally {
@@ -166,6 +195,9 @@ export function RegisterPage() {
 
   return (
     <section className="login-layout register-layout">
+      {verifyModalOpen ? (
+        <VerifyEmailModal email={registeredEmail} onContinue={handleVerifyModalContinue} />
+      ) : null}
       <aside className="login-hero register-hero">
         <div className="login-hero-brand">
           <span className="brand-icon">TP</span>
