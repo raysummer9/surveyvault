@@ -4,6 +4,23 @@ import { FiBell, FiClock } from 'react-icons/fi'
 import { HiOutlineMenu, HiOutlineSearch } from 'react-icons/hi'
 import { IoCheckmarkCircleOutline, IoFlashOutline } from 'react-icons/io5'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
+
+function SurveysMobileHeader() {
+  const { openMobileSidebar } = useSidebar()
+  return (
+    <header className="dashboard-mobile-header">
+      <button
+        type="button"
+        className="dashboard-mobile-menu-btn"
+        onClick={openMobileSidebar}
+        aria-label="Open dashboard menu"
+      >
+        <HiOutlineMenu />
+      </button>
+      <span>Surveys</span>
+    </header>
+  )
+}
 import { useAuth } from '../auth/AuthContext'
 import { fetchActivePaymentCategories } from '../../domain/paymentCategory'
 import type { MembershipTier } from '../../domain/paymentCategory'
@@ -64,7 +81,6 @@ function sortSurveys(list: SurveyRow[], sortBy: SortKey): SurveyRow[] {
 
 export function SurveysPage() {
   const { user } = useAuth()
-  const { openMobileSidebar } = useSidebar()
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -198,17 +214,7 @@ export function SurveysPage() {
 
   return (
     <AppSidebarLayout>
-      <header className="dashboard-mobile-header">
-        <button
-          type="button"
-          className="profile-mobile-menu-btn"
-          onClick={openMobileSidebar}
-          aria-label="Open dashboard menu"
-        >
-          <HiOutlineMenu />
-        </button>
-        <span>Surveys</span>
-      </header>
+      <SurveysMobileHeader />
 
       <section className="page surveys-page">
         <div className="surveys-page-inner">

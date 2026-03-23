@@ -13,6 +13,8 @@ import { APP_NAME } from '../../config/brand'
 import { SidebarMemberCard } from './SidebarMemberCard'
 
 const SidebarContext = createContext<{ openMobileSidebar: () => void } | null>(null)
+
+/** Must be used in a component rendered *inside* `<AppSidebarLayout>` (e.g. a mobile header child), not in the same component that wraps the layout. */
 export function useSidebar() {
   const ctx = useContext(SidebarContext)
   return ctx ?? { openMobileSidebar: () => {} }
@@ -258,72 +260,76 @@ export function AppSidebarLayout({ children }: AppSidebarLayoutProps) {
               <HiOutlineX />
             </button>
           </div>
-          {!joinedWorkforce && accountSetupItems.length > 0 && (
-            <>
-              <p className="account-setup-section-title">Account setup</p>
-              <nav className="onboarding-mobile-nav account-setup-nav">
-                {accountSetupItems.map((item) => (
+          <div className="onboarding-mobile-sidebar-scroll">
+            {!joinedWorkforce && accountSetupItems.length > 0 && (
+              <>
+                <p className="account-setup-section-title">Account setup</p>
+                <nav className="onboarding-mobile-nav account-setup-nav">
+                  {accountSetupItems.map((item) => (
+                    <NavLink
+                      key={item.to + item.label}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        [
+                          'onboarding-mobile-link',
+                          isActive || item.flowActive ? 'active' : '',
+                          item.complete ? 'is-complete' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')
+                      }
+                      onClick={() => setMobileSidebarOpen(false)}
+                    >
+                      <span>
+                        {item.label}
+                        {item.showNewBadge && <span className="account-setup-nav-new">New</span>}
+                      </span>
+                      {item.complete && <span className="account-setup-nav-check" aria-hidden />}
+                    </NavLink>
+                  ))}
+                </nav>
+              </>
+            )}
+            <p className="onboarding-nav-title">{joinedWorkforce ? 'Dashboard' : 'Workspace'}</p>
+            <nav className="onboarding-mobile-nav">
+              {mainNavItems.map((item) => {
+                const locked = isMainLocked()
+                if (locked) {
+                  return (
+                    <span key={item.id} className="onboarding-mobile-link locked" aria-disabled>
+                      <span>{item.label}</span>
+                      <FiLock className="onboarding-nav-lock" aria-hidden />
+                    </span>
+                  )
+                }
+                return (
                   <NavLink
-                    key={item.to + item.label}
+                    key={item.id}
                     to={item.to}
-                    className={({ isActive }) =>
-                      [
-                        'onboarding-mobile-link',
-                        isActive || item.flowActive ? 'active' : '',
-                        item.complete ? 'is-complete' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')
-                    }
+                    className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
                     onClick={() => setMobileSidebarOpen(false)}
                   >
-                    <span>
-                      {item.label}
-                      {item.showNewBadge && <span className="account-setup-nav-new">New</span>}
-                    </span>
-                    {item.complete && <span className="account-setup-nav-check" aria-hidden />}
+                    {item.label}
                   </NavLink>
-                ))}
-              </nav>
-            </>
-          )}
-          <p className="onboarding-nav-title">{joinedWorkforce ? 'Dashboard' : 'Workspace'}</p>
-          <nav className="onboarding-mobile-nav">
-            {mainNavItems.map((item) => {
-              const locked = isMainLocked()
-              if (locked) {
-                return (
-                  <span key={item.id} className="onboarding-mobile-link locked" aria-disabled>
-                    <span>{item.label}</span>
-                    <FiLock className="onboarding-nav-lock" aria-hidden />
-                  </span>
                 )
-              }
-              return (
-                <NavLink
-                  key={item.id}
-                  to={item.to}
-                  className={({ isActive }) => (isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link')}
-                  onClick={() => setMobileSidebarOpen(false)}
-                >
-                  {item.label}
-                </NavLink>
-              )
-            })}
-          </nav>
-          <p className="onboarding-nav-title onboarding-nav-title-help">Help</p>
-          <nav className="onboarding-mobile-nav">
-            <NavLink
-              to="/dashboard/support"
-              className={({ isActive }) =>
-                isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
-              }
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              Support
-            </NavLink>
-          </nav>
-          <SidebarMemberCard onAfterLogout={() => setMobileSidebarOpen(false)} />
+              })}
+            </nav>
+            <p className="onboarding-nav-title onboarding-nav-title-help">Help</p>
+            <nav className="onboarding-mobile-nav">
+              <NavLink
+                to="/dashboard/support"
+                className={({ isActive }) =>
+                  isActive ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
+                }
+                onClick={() => setMobileSidebarOpen(false)}
+              >
+                Support
+              </NavLink>
+            </nav>
+          </div>
+          <div className="onboarding-mobile-sidebar-footer">
+            <SidebarMemberCard onAfterLogout={() => setMobileSidebarOpen(false)} />
+          </div>
         </aside>
       </section>
     </SidebarContext.Provider>

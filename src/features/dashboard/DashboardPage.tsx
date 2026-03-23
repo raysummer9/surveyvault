@@ -5,6 +5,23 @@ import { HiOutlineMenu } from 'react-icons/hi'
 import { IoWalletOutline } from 'react-icons/io5'
 import { fetchMemberVerifiedMembershipTier, type MembershipTier } from '../../domain/paymentCategory'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
+
+function DashboardMobileHeader() {
+  const { openMobileSidebar } = useSidebar()
+  return (
+    <header className="dashboard-mobile-header">
+      <button
+        type="button"
+        className="dashboard-mobile-menu-btn"
+        onClick={openMobileSidebar}
+        aria-label="Open dashboard menu"
+      >
+        <HiOutlineMenu />
+      </button>
+      <span>Earnings</span>
+    </header>
+  )
+}
 import { MembershipTierBadge } from '../../shared/ui/MembershipTierBadge'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -27,7 +44,6 @@ import { getSurveyCategoryStyle } from '../surveys/surveyCategoryMeta'
 
 export function DashboardPage() {
   const { user, profile } = useAuth()
-  const { openMobileSidebar } = useSidebar()
   const location = useLocation()
   const justCompletedSurvey = Boolean(
     (location.state as { surveyCompleted?: boolean } | null)?.surveyCompleted,
@@ -120,17 +136,7 @@ export function DashboardPage() {
 
   return (
     <AppSidebarLayout>
-      <header className="dashboard-mobile-header">
-        <button
-          type="button"
-          className="profile-mobile-menu-btn"
-          onClick={openMobileSidebar}
-          aria-label="Open dashboard menu"
-        >
-          <HiOutlineMenu />
-        </button>
-        <span>Earnings</span>
-      </header>
+      <DashboardMobileHeader />
 
       <section className="page earnings-page">
         <div className="earnings-page-inner">

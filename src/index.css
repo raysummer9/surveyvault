@@ -3582,7 +3582,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: max(24px, env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px));
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   backdrop-filter: blur(3px);
 }
 
@@ -4760,6 +4764,7 @@ body {
   color: #dc2626;
 }
 
+/* Width for completion dialog: see .logout-toast.onboarding-complete-toast below */
 .onboarding-complete-toast {
   max-width: 480px;
 }
@@ -7106,20 +7111,21 @@ body {
 }
 
 .logout-toast {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 220;
-  width: min(360px, calc(100vw - 24px));
+  position: relative;
+  z-index: 1;
+  width: min(360px, 100%);
+  max-width: 100%;
+  margin: auto;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #ffffff;
   box-shadow:
     0 10px 15px -3px rgba(15, 23, 42, 0.1),
     0 4px 6px -4px rgba(15, 23, 42, 0.12);
-  padding: 12px;
+  padding: 14px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .logout-toast-overlay {
@@ -7127,6 +7133,15 @@ body {
   inset: 0;
   background: rgba(2, 6, 23, 0.35);
   z-index: 219;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .logout-toast p {
@@ -7151,15 +7166,18 @@ body {
   margin-top: 4px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .logout-toast-cancel,
 .logout-toast-confirm {
-  height: 34px;
+  min-height: 40px;
+  height: auto;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  padding: 8px 12px;
+  box-sizing: border-box;
 }
 
 .logout-toast-cancel {
@@ -7172,6 +7190,10 @@ body {
   border: 1px solid #fecaca;
   background: #fef2f2;
   color: #dc2626;
+}
+
+.logout-toast.onboarding-complete-toast {
+  width: min(480px, 100%);
 }
 
 .onboarding-main {
@@ -8819,16 +8841,24 @@ svg.spin {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-reject-modal {
   width: 100%;
   max-width: 480px;
+  max-height: min(92vh, 720px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: #fff;
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
 
 .admin-reject-modal h3 {
@@ -11519,7 +11549,12 @@ svg.spin {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .country-modal {
@@ -11637,25 +11672,39 @@ svg.spin {
     display: flex;
   }
 
-  /* Public mobile drawer: avoid 100vh + flex-end cutting Login/Join under the home indicator */
+  /*
+   * Public mobile drawer: full viewport height (top+bottom stretch fixes iOS/Chrome dvh gaps),
+   * nav scrolls in the middle, Login/Join pinned above safe area + browser chrome.
+   */
   .sidebar {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
-    max-height: -webkit-fill-available;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    max-height: none;
     padding-top: max(16px, env(safe-area-inset-top, 0px));
-    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    /* Safe area + buffer so CTAs sit above home indicator / mobile browser chrome */
+    padding-bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 16px));
     padding-left: max(20px, env(safe-area-inset-left, 0px));
     padding-right: max(20px, env(safe-area-inset-right, 0px));
-    overflow-y: auto;
+    overflow: hidden;
     overflow-x: hidden;
+  }
+
+  .sidebar .sidebar-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .sidebar-actions {
-    margin-top: 24px;
-    padding-top: 0;
+    margin-top: auto;
     flex-shrink: 0;
+    padding-top: 12px;
   }
 
   .public-navbar {
@@ -11663,10 +11712,18 @@ svg.spin {
     padding: 12px 16px;
   }
 
+  /* Full-bleed app shell: avoid stacking with .page / .public-page-content (was double gutters + white side bars). */
   .public-content {
     min-height: calc(100vh - 56px);
-    padding-left: max(20px, env(safe-area-inset-left, 0px));
-    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .public-page-content:not(.landing-page):not(.open-projects-page):not(.what-to-expect-page) {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
 
   .login-layout {
@@ -12038,22 +12095,30 @@ svg.spin {
     pointer-events: auto;
   }
 
+  /*
+   * Dashboard / admin mobile drawer: full height (top+bottom), nav scrolls, member card / admin footer pinned bottom.
+   */
   .onboarding-mobile-sidebar {
-    display: grid;
-    align-content: start;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
     position: fixed;
     top: 0;
+    bottom: 0;
     left: 0;
     width: 280px;
     max-width: 86vw;
-    height: 100vh;
+    height: auto;
+    max-height: none;
     background: #ffffff;
     border-right: 1px solid #e5e7eb;
     z-index: 106;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    padding: 16px 14px;
+    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+    overflow: hidden;
   }
 
   .onboarding-mobile-sidebar.open {
@@ -12064,6 +12129,34 @@ svg.spin {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .onboarding-mobile-sidebar-scroll {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .onboarding-mobile-sidebar-footer {
+    flex-shrink: 0;
+    padding-top: 12px;
+  }
+
+  .onboarding-mobile-sidebar-footer .onboarding-member {
+    margin-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .onboarding-mobile-sidebar-footer .admin-sidebar-footer {
+    margin-top: 0;
+    padding: 12px 0 0;
   }
 
   .onboarding-mobile-close-btn {
@@ -12123,9 +12216,19 @@ svg.spin {
     max-height: 86vh;
   }
 
-  .logout-toast {
-    right: 12px;
-    bottom: 12px;
+  .logout-toast p {
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .logout-toast-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .logout-toast-cancel,
+  .logout-toast-confirm {
+    min-height: 44px;
+    width: 100%;
   }
 
   .login-hero,
@@ -12226,19 +12329,23 @@ svg.spin {
   .dashboard-mobile-sidebar {
     position: fixed;
     top: 0;
+    bottom: 0;
     left: 0;
     width: 280px;
     max-width: 86vw;
-    height: 100vh;
+    height: auto;
     background: #ffffff;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
     z-index: 100;
-    padding: 16px 14px;
+    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    display: grid;
-    align-content: start;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .dashboard-mobile-sidebar.open {
@@ -12384,13 +12491,30 @@ svg.spin {
 }
 
 @media (max-width: 480px) {
+  .verify-email-modal {
+    padding: 22px 18px 20px;
+  }
+
+  .verify-email-modal h2 {
+    font-size: 18px;
+  }
+
+  .admin-reject-modal {
+    padding: 18px 16px;
+  }
+
   .public-navbar {
     padding: 10px 16px;
   }
 
   .public-content {
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .public-page-content:not(.landing-page):not(.open-projects-page):not(.what-to-expect-page) {
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
   }
 
   .sidebar {

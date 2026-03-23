@@ -128,45 +128,49 @@ export function AdminLayout() {
               <HiOutlineX />
             </button>
           </div>
-          <nav className="onboarding-mobile-nav">
-            {adminNavItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => {
-                  const active =
-                    item.to === '/admin/payment-settings'
-                      ? location.pathname.startsWith('/admin/payment-settings')
-                      : item.to === '/admin/settings'
-                        ? location.pathname === '/admin/settings'
-                        : item.to === '/admin/terms'
-                          ? location.pathname === '/admin/terms'
-                          : item.to === '/admin/users'
-                            ? location.pathname.startsWith('/admin/users')
-                            : isActive
-                  return active ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
+          <div className="onboarding-mobile-sidebar-scroll">
+            <nav className="onboarding-mobile-nav">
+              {adminNavItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => {
+                    const active =
+                      item.to === '/admin/payment-settings'
+                        ? location.pathname.startsWith('/admin/payment-settings')
+                        : item.to === '/admin/settings'
+                          ? location.pathname === '/admin/settings'
+                          : item.to === '/admin/terms'
+                            ? location.pathname === '/admin/terms'
+                            : item.to === '/admin/users'
+                              ? location.pathname.startsWith('/admin/users')
+                              : isActive
+                    return active ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
+                  }}
+                  onClick={() => setMobileSidebarOpen(false)}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+          <div className="onboarding-mobile-sidebar-footer">
+            <div className="admin-sidebar-footer">
+              <Link to="/admin/settings" className="admin-sidebar-account-link" onClick={() => setMobileSidebarOpen(false)}>
+                Account settings
+              </Link>
+              <span className="admin-sidebar-email">{user?.email ?? 'Admin'}</span>
+              <button
+                type="button"
+                className="admin-sidebar-logout"
+                onClick={() => {
+                  void signOut()
+                  setMobileSidebarOpen(false)
                 }}
-                onClick={() => setMobileSidebarOpen(false)}
               >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="admin-sidebar-footer">
-            <Link to="/admin/settings" className="admin-sidebar-account-link" onClick={() => setMobileSidebarOpen(false)}>
-              Account settings
-            </Link>
-            <span className="admin-sidebar-email">{user?.email ?? 'Admin'}</span>
-            <button
-              type="button"
-              className="admin-sidebar-logout"
-              onClick={() => {
-                void signOut()
-                setMobileSidebarOpen(false)
-              }}
-            >
-              Sign out
-            </button>
+                Sign out
+              </button>
+            </div>
           </div>
         </aside>
       </section>
