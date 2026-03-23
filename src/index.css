@@ -12294,6 +12294,93 @@ svg.spin {
   .stats-row {
     grid-template-columns: 1fr;
   }
+
+  /* —— Member dashboard: surveys / earnings (mobile) —— */
+  .onboarding-main-dashboard .onboarding-main-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .page.surveys-page {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  .surveys-page-inner {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .surveys-page-toolbar-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .surveys-page-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .surveys-page-toolbar-meta {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .surveys-filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .surveys-search-wrap,
+  .surveys-select-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .surveys-daily-limit-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page.earnings-page {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .earnings-page-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .earnings-hero {
+    padding: 14px 14px;
+  }
+
+  .earnings-mini-withdraw {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .earnings-withdraw-cta {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .earnings-survey-preview-grid.surveys-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .support-page-shell {
+    padding-left: max(0px, env(safe-area-inset-left, 0px));
+    padding-right: max(0px, env(safe-area-inset-right, 0px));
+  }
 }
 
 @media (max-width: 480px) {
