@@ -7,7 +7,7 @@ export function PrivacyPage() {
     <PublicPageLayout>
       <div className="legal-page">
         <h1>Privacy Policy</h1>
-        <p className="legal-page-updated">Last updated: {new Date().getFullYear()}</p>
+        <p className="legal-page-updated">Last updated: {new Date().toLocaleDateString()}</p>
         <p>
           {APP_NAME} (&quot;we&quot;) respects your privacy. This policy describes how we handle information when you use
           our website and services.

@@ -47,7 +47,7 @@ export function TermsPage() {
             <h1>{title}</h1>
             <p className="legal-page-updated">
               Last updated:{' '}
-              {updatedAt ? new Date(updatedAt).toLocaleDateString() : new Date().getFullYear()}
+              {(updatedAt ? new Date(updatedAt) : new Date()).toLocaleDateString()}
             </p>
             <LegalMarkdown markdown={markdown} className="legal-page-markdown" />
             <p>
