@@ -10,10 +10,12 @@ import { useAuth } from '../auth/AuthContext'
 import {
   fetchActiveSurveys,
   fetchCompletedSurveyIdsForUser,
+  fetchMemberSurveyCompletionsCountLast24h,
   fetchMemberSurveyEarningsSince,
   fetchMemberSurveyStats,
   formatCents,
 } from '../../domain/surveyApi'
+import { DAILY_SURVEY_COMPLETION_LIMIT } from '../../domain/surveyLimits'
 import type { SurveyRow } from '../../domain/surveyTypes'
 import {
   fetchApprovedWithdrawalsTotalCents,
@@ -47,6 +49,7 @@ export function DashboardPage() {
   const [lastWeekCents, setLastWeekCents] = useState(0)
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
+  const [completionsLast24h, setCompletionsLast24h] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -58,7 +61,7 @@ export function DashboardPage() {
     const since7 = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString()
     const since14 = new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString()
     try {
-      const [s, w, pendingW, approvedW, tier, earned7, earned14, list, done] = await Promise.all([
+      const [s, w, pendingW, approvedW, tier, earned7, earned14, list, done, n24] = await Promise.all([
         fetchMemberSurveyStats(user.id),
         fetchWithdrawableBalanceCents(user.id),
         fetchPendingWithdrawalRequestsTotalCents(user.id),
@@ -68,6 +71,7 @@ export function DashboardPage() {
         fetchMemberSurveyEarningsSince(user.id, since14),
         fetchActiveSurveys(),
         fetchCompletedSurveyIdsForUser(user.id),
+        fetchMemberSurveyCompletionsCountLast24h(user.id),
       ])
       setStats(s)
       setWithdrawableCents(w)
@@ -78,6 +82,7 @@ export function DashboardPage() {
       setLastWeekCents(Math.max(0, earned14 - earned7))
       setSurveys(list)
       setCompletedIds(done)
+      setCompletionsLast24h(n24)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load earnings.')
     } finally {
@@ -110,6 +115,8 @@ export function DashboardPage() {
     const available = surveys.filter((s) => !completedIds.has(s.id))
     return available.slice(0, 3)
   }, [surveys, completedIds])
+
+  const atDailySurveyLimit = completionsLast24h >= DAILY_SURVEY_COMPLETION_LIMIT
 
   return (
     <AppSidebarLayout>
@@ -246,6 +253,12 @@ export function DashboardPage() {
                           View all surveys
                         </Link>
                       </div>
+                      {atDailySurveyLimit ? (
+                        <p className="earnings-daily-limit-notice" role="status">
+                          Daily survey limit reached ({DAILY_SURVEY_COMPLETION_LIMIT} per 24h). More surveys unlock as
+                          earlier completions roll off.
+                        </p>
+                      ) : null}
                       <ul className="surveys-card-grid earnings-survey-preview-grid">
                         {previewSurveys.map((survey) => {
                           const catStyle = getSurveyCategoryStyle(survey.survey_category)
@@ -274,12 +287,18 @@ export function DashboardPage() {
                                     <span>~{survey.estimated_minutes} min</span>
                                   </div>
                                 </div>
-                                <Link
-                                  className="surveys-card-cta surveys-card-cta--primary"
-                                  to={`/dashboard/surveys/${survey.id}/take`}
-                                >
-                                  Start
-                                </Link>
+                                {atDailySurveyLimit ? (
+                                  <span className="surveys-card-daily-limit-pill earnings-preview-daily-limit">
+                                    Limit reached
+                                  </span>
+                                ) : (
+                                  <Link
+                                    className="surveys-card-cta surveys-card-cta--primary"
+                                    to={`/dashboard/surveys/${survey.id}/take`}
+                                  >
+                                    Start
+                                  </Link>
+                                )}
                               </div>
                             </li>
                           )

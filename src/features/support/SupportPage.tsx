@@ -6,8 +6,13 @@ import { HiOutlineMenu } from 'react-icons/hi'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
 import { APP_NAME } from '../../config/brand'
 import { SUPPORT_EMAIL, supportMailto, TELEGRAM_SUPPORT_URL } from '../../config/support'
+import { DAILY_SURVEY_COMPLETION_LIMIT } from '../../domain/surveyLimits'
 
 const FAQ_ITEMS = [
+  {
+    q: 'How many surveys can I complete per day?',
+    a: `You can complete up to **${DAILY_SURVEY_COMPLETION_LIMIT} surveys per rolling 24 hours** (not a calendar day). The limit uses your completion timestamps, so slots open up as older completions pass the 24-hour mark.`,
+  },
   {
     q: 'How long do withdrawals take to process?',
     a: 'Withdrawal requests are typically reviewed within 1–3 business days. Once approved, payout timing depends on your chosen method (e.g. PayPal or bank). You’ll see status updates in your Withdrawals area.',

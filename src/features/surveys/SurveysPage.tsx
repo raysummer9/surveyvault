@@ -11,9 +11,11 @@ import {
   fetchActiveSurveys,
   fetchCompletedSurveyIdsForUser,
   fetchMemberMaxTierSort,
+  fetchMemberSurveyCompletionsCountLast24h,
   formatCents,
   isSurveyEligibleForMember,
 } from '../../domain/surveyApi'
+import { DAILY_SURVEY_COMPLETION_LIMIT } from '../../domain/surveyLimits'
 import { SURVEY_CATEGORIES, type SurveyCategory, type SurveyRow } from '../../domain/surveyTypes'
 import { getSurveyCategoryStyle } from './surveyCategoryMeta'
 
@@ -76,6 +78,8 @@ export function SurveysPage() {
   const [page, setPage] = useState(1)
   const [memberSort, setMemberSort] = useState(-1)
   const [paymentTiers, setPaymentTiers] = useState<MembershipTier[]>([])
+  /** Completions in rolling 24h (matches DB daily limit). */
+  const [completionsLast24h, setCompletionsLast24h] = useState(0)
 
   const requiredTierSortById = useMemo(() => {
     const m = new Map<string, number>()
@@ -99,16 +103,18 @@ export function SurveysPage() {
     setError('')
     setLoading(true)
     try {
-      const [list, done, ms, tiers] = await Promise.all([
+      const [list, done, ms, tiers, n24] = await Promise.all([
         fetchActiveSurveys(),
         fetchCompletedSurveyIdsForUser(user.id),
         fetchMemberMaxTierSort(user.id),
         fetchActivePaymentCategories(),
+        fetchMemberSurveyCompletionsCountLast24h(user.id),
       ])
       setSurveys(list)
       setCompletedIds(done)
       setMemberSort(ms)
       setPaymentTiers(tiers)
+      setCompletionsLast24h(n24)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load surveys.')
       setSurveys([])
@@ -180,6 +186,8 @@ export function SurveysPage() {
 
   const hasActiveFilters =
     categoryFilter !== 'all' || searchQuery.trim().length > 0 || eligibilityFilter !== 'all'
+
+  const atDailyLimit = completionsLast24h >= DAILY_SURVEY_COMPLETION_LIMIT
 
   const clearAllFilters = () => {
     setSearchQuery('')
@@ -356,6 +364,27 @@ export function SurveysPage() {
             ) : null}
           </div>
 
+          {!loading && !error ? (
+            <div
+              className={`surveys-daily-limit-banner ${atDailyLimit ? 'surveys-daily-limit-banner--at-limit' : ''}`}
+              role="status"
+            >
+              <span className="surveys-daily-limit-banner-label">24-hour survey limit</span>
+              <span className="surveys-daily-limit-banner-value">
+                {completionsLast24h} / {DAILY_SURVEY_COMPLETION_LIMIT} completed
+              </span>
+              {atDailyLimit ? (
+                <span className="surveys-daily-limit-banner-hint">
+                  You&apos;ve reached today&apos;s cap — try again after older completions age out (rolling 24 hours).
+                </span>
+              ) : (
+                <span className="surveys-daily-limit-banner-hint">
+                  Resets on a rolling window (each completion expires from the count after 24 hours).
+                </span>
+              )}
+            </div>
+          ) : null}
+
           {loading ? (
             <p className="survey-page-panel-muted">Loading surveys…</p>
           ) : error ? (
@@ -387,9 +416,10 @@ export function SurveysPage() {
                   const catStyle = getSurveyCategoryStyle(survey.survey_category)
                   const isFeatured = survey.id === featuredSurveyId && tab === 'available'
                   const showIneligible = !done && tab === 'available' && !eligible
+                  const showDailyLimit = !done && tab === 'available' && eligible && atDailyLimit
                   return (
                     <li
-                      className={`surveys-card ${isFeatured ? 'surveys-card--featured' : ''} ${done ? 'surveys-card--done' : ''} ${showIneligible ? 'surveys-card--ineligible' : ''}`}
+                      className={`surveys-card ${isFeatured ? 'surveys-card--featured' : ''} ${done ? 'surveys-card--done' : ''} ${showIneligible ? 'surveys-card--ineligible' : ''} ${showDailyLimit ? 'surveys-card--daily-limit' : ''}`}
                       key={survey.id}
                     >
                       {isFeatured ? (
@@ -433,6 +463,10 @@ export function SurveysPage() {
                           >
                             Upgrade to unlock
                           </Link>
+                        ) : showDailyLimit ? (
+                          <span className="surveys-card-daily-limit-pill" title={DAILY_SURVEY_COMPLETION_LIMIT + ' surveys per 24 hours'}>
+                            Daily limit reached
+                          </span>
                         ) : (
                           <Link
                             className={`surveys-card-cta ${isFeatured ? 'surveys-card-cta--primary' : ''}`}

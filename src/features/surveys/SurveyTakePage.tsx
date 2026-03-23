@@ -5,11 +5,17 @@ import { useAuth } from '../auth/AuthContext'
 import { fetchActivePaymentCategories } from '../../domain/paymentCategory'
 import {
   fetchMemberMaxTierSort,
+  fetchMemberSurveyCompletionsCountLast24h,
   fetchSurveyById,
   formatCents,
   isSurveyEligibleForMember,
   submitSurveyCompletion,
 } from '../../domain/surveyApi'
+import {
+  DAILY_SURVEY_COMPLETION_LIMIT,
+  DAILY_SURVEY_LIMIT_ERROR_MESSAGE,
+  isDailySurveyLimitError,
+} from '../../domain/surveyLimits'
 import type { SurveyQuestion, SurveyRow } from '../../domain/surveyTypes'
 
 function validateAnswers(survey: SurveyRow, answers: Record<string, string>): string | null {
@@ -32,12 +38,14 @@ export function SurveyTakePage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [eligible, setEligible] = useState<boolean | null>(null)
+  const [dailyLimitBlocked, setDailyLimitBlocked] = useState(false)
 
   const load = useCallback(async () => {
     if (!surveyId) return
     setError('')
     setLoading(true)
     setEligible(null)
+    setDailyLimitBlocked(false)
     try {
       const row = await fetchSurveyById(surveyId)
       if (!row?.is_active) {
@@ -62,6 +70,9 @@ export function SurveyTakePage() {
       ])
       const requiredTierSortByCategoryId = new Map(tiers.map((t) => [t.id, t.sortOrder]))
       setEligible(isSurveyEligibleForMember(memberSort, row, requiredTierSortByCategoryId))
+
+      const n = await fetchMemberSurveyCompletionsCountLast24h(user.id)
+      setDailyLimitBlocked(n >= DAILY_SURVEY_COMPLETION_LIMIT)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load survey.')
       setSurvey(null)
@@ -94,7 +105,9 @@ export function SurveyTakePage() {
       navigate('/dashboard/earnings', { replace: true, state: { surveyCompleted: true } })
     } catch (err) {
       const m = err instanceof Error ? err.message : 'Submit failed.'
-      if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) {
+      if (isDailySurveyLimitError(m)) {
+        setError(DAILY_SURVEY_LIMIT_ERROR_MESSAGE)
+      } else if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) {
         setError('You already completed this survey.')
       } else {
         setError(m)
@@ -176,6 +189,22 @@ export function SurveyTakePage() {
             View plans
           </Link>
           <Link to="/dashboard/surveys" className="button secondary">
+            Back to surveys
+          </Link>
+        </div>
+      </PageSection>
+    )
+  }
+
+  if (dailyLimitBlocked) {
+    return (
+      <PageSection title={survey.title} description="Daily survey limit reached">
+        <p className="panel-muted">{DAILY_SURVEY_LIMIT_ERROR_MESSAGE}</p>
+        <p className="panel-muted" style={{ marginTop: 8 }}>
+          You can still review your completed surveys or check back after the 24-hour window resets.
+        </p>
+        <div className="survey-actions">
+          <Link to="/dashboard/surveys" className="button">
             Back to surveys
           </Link>
         </div>

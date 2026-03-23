@@ -1,4 +1,5 @@
 import { assertSupabaseConfigured } from '../lib/supabase'
+import { DAILY_SURVEY_WINDOW_MS } from './surveyLimits'
 import {
   MIN_SURVEY_QUESTIONS,
   normalizeSurveyCategory,
@@ -72,6 +73,23 @@ export async function fetchCompletedSurveyIdsForUser(userId: string): Promise<Se
 
   if (error) throw error
   return new Set((data ?? []).map((r) => (r as { survey_id: string }).survey_id))
+}
+
+/**
+ * How many surveys this member completed in the rolling last 24 hours (aligns with DB trigger window).
+ * Used for UI only; enforcement is on insert via `enforce_survey_daily_limit`.
+ */
+export async function fetchMemberSurveyCompletionsCountLast24h(userId: string): Promise<number> {
+  const client = assertSupabaseConfigured()
+  const since = new Date(Date.now() - DAILY_SURVEY_WINDOW_MS).toISOString()
+  const { count, error } = await client
+    .from('survey_completions')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', since)
+
+  if (error) throw error
+  return count ?? 0
 }
 
 export async function submitSurveyCompletion(input: {
