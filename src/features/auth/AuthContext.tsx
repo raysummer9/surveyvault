@@ -44,6 +44,8 @@ type AuthContextValue = {
   signOut: () => Promise<void>
   requestPasswordReset: (email: string) => Promise<void>
   updatePassword: (nextPassword: string) => Promise<void>
+  /** Updates auth email (and syncs user_profiles when the session email updates). */
+  updateEmail: (nextEmail: string) => Promise<void>
   refreshUserState: () => Promise<void>
   /** Merge into cached profile immediately (e.g. after a successful DB update) so route guards see new state before the next async refresh. */
   patchProfile: (patch: Partial<UserProfile>) => void
@@ -554,6 +556,32 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (error) throw error
   }, [])
 
+  const updateEmail = useCallback(
+    async (nextEmail: string) => {
+      const client = assertSupabaseConfigured()
+      const trimmed = nextEmail.trim()
+      const { data, error } = await client.auth.updateUser({ email: trimmed })
+      if (error) throw error
+      const uid = data.user?.id
+      const sessionEmail = data.user?.email
+      if (
+        uid &&
+        sessionEmail &&
+        sessionEmail.toLowerCase() === trimmed.toLowerCase()
+      ) {
+        const { error: profileErr } = await client
+          .from('user_profiles')
+          .update({ email: sessionEmail })
+          .eq('id', uid)
+        if (profileErr) {
+          console.warn('[AuthProvider] Could not sync user_profiles.email', profileErr)
+        }
+      }
+      await refreshUserState()
+    },
+    [refreshUserState],
+  )
+
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
@@ -573,6 +601,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       requestPasswordReset,
       updatePassword,
+      updateEmail,
       refreshUserState,
       patchProfile,
       pendingWorkforcePaymentRow,
@@ -592,6 +621,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       requestPasswordReset,
       updatePassword,
+      updateEmail,
       refreshUserState,
       patchProfile,
       pendingWorkforcePaymentRow,

@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
+import { FaTelegram } from 'react-icons/fa'
 import { FiBell, FiChevronDown, FiCopy, FiCreditCard, FiList, FiMail, FiMessageCircle } from 'react-icons/fi'
 import { IoWalletOutline } from 'react-icons/io5'
 import { HiOutlineMenu } from 'react-icons/hi'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
 import { APP_NAME } from '../../config/brand'
-import { SUPPORT_EMAIL, supportMailto } from '../../config/support'
+import { SUPPORT_EMAIL, supportMailto, TELEGRAM_SUPPORT_URL } from '../../config/support'
 
 const FAQ_ITEMS = [
   {
@@ -83,38 +84,68 @@ export function SupportPage() {
             </p>
           </div>
 
-          <article className="support-email-panel">
-            <div className="support-email-panel-left">
-              <div className="support-email-panel-icon" aria-hidden>
-                <FiMail />
+          <div className="support-contact-channels">
+            <article className="support-email-panel">
+              <div className="support-email-panel-left">
+                <div className="support-email-panel-icon" aria-hidden>
+                  <FiMail />
+                </div>
+                <div>
+                  <h3 className="support-email-panel-title">Email Support</h3>
+                  <p className="support-email-panel-desc">
+                    Send us an email and include your account email if you can — we&apos;ll get back to you as soon as
+                    possible.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="support-email-panel-title">Email Support</h3>
-                <p className="support-email-panel-desc">
-                  Send us an email and include your account email if you can — we&apos;ll get back to you as soon as
-                  possible.
-                </p>
+              <div className="support-email-panel-right">
+                <span className="support-email-kicker">Support email</span>
+                <div className="support-email-row">
+                  <span className="support-email-value">{SUPPORT_EMAIL}</span>
+                  <button
+                    type="button"
+                    className="support-email-copy"
+                    onClick={copyEmail}
+                    aria-label={copied ? 'Copied' : 'Copy email address'}
+                  >
+                    <FiCopy aria-hidden />
+                    {copied ? <span className="support-email-copied">Copied</span> : null}
+                  </button>
+                </div>
+                <a href={supportMailto(`${APP_NAME} support`)} className="support-email-mailto">
+                  Tap to open your mail app
+                </a>
               </div>
-            </div>
-            <div className="support-email-panel-right">
-              <span className="support-email-kicker">Support email</span>
-              <div className="support-email-row">
-                <span className="support-email-value">{SUPPORT_EMAIL}</span>
-                <button
-                  type="button"
-                  className="support-email-copy"
-                  onClick={copyEmail}
-                  aria-label={copied ? 'Copied' : 'Copy email address'}
+            </article>
+
+            <article className="support-email-panel support-telegram-panel">
+              <div className="support-email-panel-left">
+                <div className="support-email-panel-icon support-telegram-panel-icon" aria-hidden>
+                  <FaTelegram />
+                </div>
+                <div>
+                  <h3 className="support-email-panel-title">Telegram</h3>
+                  <p className="support-email-panel-desc">
+                    Message us on Telegram for quick questions — include your account email if you can.
+                  </p>
+                </div>
+              </div>
+              <div className="support-email-panel-right">
+                <span className="support-email-kicker">Task Pluse Support</span>
+                <div className="support-email-row">
+                  <span className="support-email-value">@taskpluse</span>
+                </div>
+                <a
+                  href={TELEGRAM_SUPPORT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="support-telegram-open"
                 >
-                  <FiCopy aria-hidden />
-                  {copied ? <span className="support-email-copied">Copied</span> : null}
-                </button>
+                  Open Telegram
+                </a>
               </div>
-              <a href={supportMailto(`${APP_NAME} support`)} className="support-email-mailto">
-                Tap to open your mail app
-              </a>
-            </div>
-          </article>
+            </article>
+          </div>
 
           <div className="support-tips-section">
             <h3 className="support-tips-heading">

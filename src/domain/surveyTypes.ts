@@ -72,6 +72,10 @@ export type SurveyCompletionRow = {
 
 export type MemberSurveyStats = {
   completedCount: number
+  /** Survey reward still awaiting admin “mark paid” (payout_status = pending). */
   pendingCents: number
+  /** Survey rewards marked paid (available toward withdrawal, subject to WD locks). */
   paidCents: number
+  /** Sum of all completed survey rewards (pending + paid) — “total earned” from surveys. */
+  totalEarnedCents: number
 }

@@ -32,7 +32,7 @@ export async function fetchWithdrawableBalanceCents(userId: string): Promise<num
   return typeof n === 'string' ? parseInt(n, 10) : Number(n)
 }
 
-/** Sum of withdrawal request amounts still awaiting admin review (`status = pending`). */
+/** Sum of withdrawal request amounts still awaiting admin review (`status = pending`). “Pending payout”. */
 export async function fetchPendingWithdrawalRequestsTotalCents(userId: string): Promise<number> {
   const client = assertSupabaseConfigured()
   const { data, error } = await client
@@ -40,6 +40,23 @@ export async function fetchPendingWithdrawalRequestsTotalCents(userId: string): 
     .select('amount_cents')
     .eq('user_id', userId)
     .eq('status', 'pending')
+
+  if (error) throw error
+  let sum = 0
+  for (const row of data ?? []) {
+    sum += (row as { amount_cents: number }).amount_cents
+  }
+  return sum
+}
+
+/** Sum of withdrawal requests approved by admin (`status = approved`). “Total payout” sent/accepted. */
+export async function fetchApprovedWithdrawalsTotalCents(userId: string): Promise<number> {
+  const client = assertSupabaseConfigured()
+  const { data, error } = await client
+    .from('withdrawal_requests')
+    .select('amount_cents')
+    .eq('user_id', userId)
+    .eq('status', 'approved')
 
   if (error) throw error
   let sum = 0

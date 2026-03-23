@@ -16,6 +16,9 @@ const adminNavItems = [
   { to: '/admin/payment-settings', label: 'Payment Settings' },
   { to: '/admin/surveys', label: 'Surveys' },
   { to: '/admin/withdrawals', label: 'Withdrawals' },
+  { to: '/admin/users', label: 'Manage users' },
+  { to: '/admin/terms', label: 'Terms of Service' },
+  { to: '/admin/settings', label: 'Account' },
 ] as const
 
 export function AdminLayout() {
@@ -70,7 +73,13 @@ export function AdminLayout() {
                   const active =
                     item.to === '/admin/payment-settings'
                       ? location.pathname.startsWith('/admin/payment-settings')
-                      : isActive
+                      : item.to === '/admin/settings'
+                        ? location.pathname === '/admin/settings'
+                        : item.to === '/admin/terms'
+                          ? location.pathname === '/admin/terms'
+                          : item.to === '/admin/users'
+                            ? location.pathname.startsWith('/admin/users')
+                            : isActive
                   return active ? 'onboarding-nav-item active' : 'onboarding-nav-item'
                 }}
               >
@@ -79,6 +88,9 @@ export function AdminLayout() {
             ))}
           </nav>
           <div className="admin-sidebar-footer">
+            <Link to="/admin/settings" className="admin-sidebar-account-link">
+              Account settings
+            </Link>
             <span className="admin-sidebar-email">{user?.email ?? 'Admin'}</span>
             <button
               type="button"
@@ -125,7 +137,13 @@ export function AdminLayout() {
                   const active =
                     item.to === '/admin/payment-settings'
                       ? location.pathname.startsWith('/admin/payment-settings')
-                      : isActive
+                      : item.to === '/admin/settings'
+                        ? location.pathname === '/admin/settings'
+                        : item.to === '/admin/terms'
+                          ? location.pathname === '/admin/terms'
+                          : item.to === '/admin/users'
+                            ? location.pathname.startsWith('/admin/users')
+                            : isActive
                   return active ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
                 }}
                 onClick={() => setMobileSidebarOpen(false)}
@@ -135,6 +153,9 @@ export function AdminLayout() {
             ))}
           </nav>
           <div className="admin-sidebar-footer">
+            <Link to="/admin/settings" className="admin-sidebar-account-link" onClick={() => setMobileSidebarOpen(false)}>
+              Account settings
+            </Link>
             <span className="admin-sidebar-email">{user?.email ?? 'Admin'}</span>
             <button
               type="button"

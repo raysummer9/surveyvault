@@ -43,6 +43,12 @@ import { PaymentPage } from '../features/workforce/PaymentPage'
 import { UpgradeMembershipPage } from '../features/workforce/UpgradeMembershipPage'
 import { WorkforcePendingReviewPage } from '../features/workforce/WorkforcePendingReviewPage'
 import { SupportPage } from '../features/support/SupportPage'
+import { AdminUsersPage } from '../features/admin/AdminUsersPage'
+import { AdminUserDetailPage } from '../features/admin/AdminUserDetailPage'
+import { AdminSettingsPage } from '../features/admin/AdminSettingsPage'
+import { AdminTermsPage } from '../features/admin/AdminTermsPage'
+import { TermsPage } from '../features/public/TermsPage'
+import { PrivacyPage } from '../features/public/PrivacyPage'
 
 export const appRouter = createBrowserRouter([
   {
@@ -53,6 +59,8 @@ export const appRouter = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: 'open-projects', element: <OpenProjectsPage /> },
       { path: 'what-to-expect', element: <WhatToExpectPage /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: 'privacy', element: <PrivacyPage /> },
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
@@ -257,6 +265,10 @@ export const appRouter = createBrowserRouter([
               },
               { path: 'surveys', element: <AdminSurveysPage /> },
               { path: 'withdrawals', element: <AdminWithdrawalsPage /> },
+              { path: 'users/:userId', element: <AdminUserDetailPage /> },
+              { path: 'users', element: <AdminUsersPage /> },
+              { path: 'settings', element: <AdminSettingsPage /> },
+              { path: 'terms', element: <AdminTermsPage /> },
             ],
           },
         ],

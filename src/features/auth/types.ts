@@ -14,6 +14,10 @@ export type UserProfile = {
   workforce_payment_confirmed?: boolean
   /** Set when admin rejects payment verification; cleared on new payment submit */
   workforce_payment_rejection_reason?: string | null
+  /** Admin suspension — member cannot use dashboard until reinstated */
+  account_suspended?: boolean
+  suspended_at?: string | null
+  suspended_reason?: string | null
   created_at: string
   updated_at: string
 }
@@ -89,6 +93,10 @@ export function isAdminApproved(profile: UserProfile | null | undefined) {
 
 export function hasJoinedWorkforce(profile: UserProfile | null | undefined) {
   return profile?.workforce_joined === true
+}
+
+export function isAccountSuspended(profile: UserProfile | null | undefined) {
+  return profile?.account_suspended === true
 }
 
 /** User has paid and is waiting for admin to approve workforce access */

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi'
+import { AccountSuspendedScreen } from '../../features/auth/AccountSuspendedScreen'
+import { isAccountSuspended } from '../../features/auth/types'
 import { useAuth } from '../../features/auth/AuthContext'
 import { APP_NAME } from '../../config/brand'
+import { TelegramSupportFab } from '../../shared/ui/TelegramSupportFab'
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
@@ -11,7 +14,7 @@ const navItems = [
 ]
 
 export function AppLayout() {
-  const { user } = useAuth()
+  const { user, profile, profileReady } = useAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDashboardRoute = location.pathname.startsWith('/dashboard')
@@ -20,6 +23,23 @@ export function AppLayout() {
   const hidePublicNavbar = isDashboardRoute || isAdminRoute
 
   const closeSidebar = () => setSidebarOpen(false)
+
+  /** Suspended members cannot use the dashboard — show policy notice instead of any dashboard route. */
+  if (
+    profileReady &&
+    user &&
+    profile &&
+    isAccountSuspended(profile) &&
+    location.pathname.startsWith('/dashboard')
+  ) {
+    return (
+      <div className="public-shell">
+        <main className="public-content no-navbar account-suspended-main">
+          <AccountSuspendedScreen />
+        </main>
+      </div>
+    )
+  }
 
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : ''
@@ -143,6 +163,7 @@ export function AppLayout() {
 
       <main className={hidePublicNavbar ? 'public-content no-navbar' : 'public-content'}>
         <Outlet />
+        {isDashboardRoute ? <TelegramSupportFab /> : null}
       </main>
     </div>
   )

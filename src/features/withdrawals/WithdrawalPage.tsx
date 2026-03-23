@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageSection } from '../../shared/ui/PageSection'
 import { useAuth } from '../auth/AuthContext'
-import { formatCents } from '../../domain/surveyApi'
+import { fetchMemberSurveyStats, formatCents } from '../../domain/surveyApi'
 import {
   MIN_WITHDRAWAL_CENTS,
   createWithdrawalRequest,
+  fetchApprovedWithdrawalsTotalCents,
   fetchMyWithdrawals,
+  fetchPendingWithdrawalRequestsTotalCents,
   fetchWithdrawableBalanceCents,
   type WithdrawalMethod,
   type WithdrawalRequestRow,
@@ -34,6 +36,9 @@ export function WithdrawalPage() {
   const [bankCountry, setBankCountry] = useState('')
   const [memberNote, setMemberNote] = useState('')
   const [rows, setRows] = useState<WithdrawalRequestRow[]>([])
+  const [totalEarnedCents, setTotalEarnedCents] = useState(0)
+  const [pendingPayoutCents, setPendingPayoutCents] = useState(0)
+  const [totalPayoutCents, setTotalPayoutCents] = useState(0)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -44,12 +49,18 @@ export function WithdrawalPage() {
     setError('')
     setLoading(true)
     try {
-      const [bal, list] = await Promise.all([
+      const [bal, list, stats, pendingWd, approvedWd] = await Promise.all([
         fetchWithdrawableBalanceCents(user.id),
         fetchMyWithdrawals(user.id),
+        fetchMemberSurveyStats(user.id),
+        fetchPendingWithdrawalRequestsTotalCents(user.id),
+        fetchApprovedWithdrawalsTotalCents(user.id),
       ])
       setWithdrawableCents(bal)
       setRows(list)
+      setTotalEarnedCents(stats.totalEarnedCents)
+      setPendingPayoutCents(pendingWd)
+      setTotalPayoutCents(approvedWd)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load withdrawal data.')
     } finally {
@@ -133,11 +144,29 @@ export function WithdrawalPage() {
         <p className="panel-muted">Loading…</p>
       ) : (
         <>
+          <div className="withdrawal-earnings-summary" aria-label="Earnings summary">
+            <div className="withdrawal-earnings-summary-item">
+              <span className="withdrawal-earnings-summary-label">Total earned</span>
+              <span className="withdrawal-earnings-summary-value">{formatCents(totalEarnedCents)}</span>
+              <span className="withdrawal-earnings-summary-hint">All completed surveys</span>
+            </div>
+            <div className="withdrawal-earnings-summary-item">
+              <span className="withdrawal-earnings-summary-label">Pending payout</span>
+              <span className="withdrawal-earnings-summary-value">{formatCents(pendingPayoutCents)}</span>
+              <span className="withdrawal-earnings-summary-hint">Requested; awaiting admin</span>
+            </div>
+            <div className="withdrawal-earnings-summary-item">
+              <span className="withdrawal-earnings-summary-label">Total payout</span>
+              <span className="withdrawal-earnings-summary-value">{formatCents(totalPayoutCents)}</span>
+              <span className="withdrawal-earnings-summary-hint">Approved by admin</span>
+            </div>
+          </div>
+
           <div className="withdrawal-balance-card">
             <p className="withdrawal-balance-label">Available to withdraw</p>
             <p className="withdrawal-balance-value">{formatCents(withdrawableCents)}</p>
             <p className="withdrawal-balance-hint">
-              Cleared earnings minus any pending or approved withdrawal requests.
+              Cleared survey earnings (marked paid) minus any pending or approved withdrawal requests.
             </p>
           </div>
 

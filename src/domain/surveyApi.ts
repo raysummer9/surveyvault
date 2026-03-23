@@ -114,6 +114,7 @@ export async function fetchMemberSurveyStats(userId: string): Promise<MemberSurv
     completedCount: rows.length,
     pendingCents,
     paidCents,
+    totalEarnedCents: pendingCents + paidCents,
   }
 }
 

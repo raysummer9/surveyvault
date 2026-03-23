@@ -1,6 +1,9 @@
 /** Member support inbox (dashboard & help). */
 export const SUPPORT_EMAIL = 'taskpulse182@gmail.com' as const
 
+/** Official Telegram support (Task Pluse Support). */
+export const TELEGRAM_SUPPORT_URL = 'https://t.me/taskpluse' as const
+
 export function supportMailto(subject?: string): string {
   const base = `mailto:${SUPPORT_EMAIL}`
   if (!subject?.trim()) return base

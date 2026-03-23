@@ -16,6 +16,7 @@ import {
 } from '../../domain/surveyApi'
 import type { SurveyRow } from '../../domain/surveyTypes'
 import {
+  fetchApprovedWithdrawalsTotalCents,
   fetchPendingWithdrawalRequestsTotalCents,
   fetchWithdrawableBalanceCents,
   MIN_WITHDRAWAL_CENTS,
@@ -30,10 +31,17 @@ export function DashboardPage() {
     (location.state as { surveyCompleted?: boolean } | null)?.surveyCompleted,
   )
 
-  const [stats, setStats] = useState({ completedCount: 0, pendingCents: 0, paidCents: 0 })
+  const [stats, setStats] = useState({
+    completedCount: 0,
+    pendingCents: 0,
+    paidCents: 0,
+    totalEarnedCents: 0,
+  })
   const [withdrawableCents, setWithdrawableCents] = useState(0)
-  /** Sum of withdrawal requests with status `pending` (awaiting admin), not survey reward accrual. */
+  /** Withdrawal requests awaiting admin (pending payout). */
   const [pendingWithdrawalCents, setPendingWithdrawalCents] = useState(0)
+  /** Withdrawal requests approved by admin (total payout). */
+  const [totalPayoutCents, setTotalPayoutCents] = useState(0)
   const [membershipTier, setMembershipTier] = useState<MembershipTier | null>(null)
   const [thisWeekCents, setThisWeekCents] = useState(0)
   const [lastWeekCents, setLastWeekCents] = useState(0)
@@ -50,10 +58,11 @@ export function DashboardPage() {
     const since7 = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString()
     const since14 = new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString()
     try {
-      const [s, w, pendingW, tier, earned7, earned14, list, done] = await Promise.all([
+      const [s, w, pendingW, approvedW, tier, earned7, earned14, list, done] = await Promise.all([
         fetchMemberSurveyStats(user.id),
         fetchWithdrawableBalanceCents(user.id),
         fetchPendingWithdrawalRequestsTotalCents(user.id),
+        fetchApprovedWithdrawalsTotalCents(user.id),
         fetchMemberVerifiedMembershipTier(user.id),
         fetchMemberSurveyEarningsSince(user.id, since7),
         fetchMemberSurveyEarningsSince(user.id, since14),
@@ -63,6 +72,7 @@ export function DashboardPage() {
       setStats(s)
       setWithdrawableCents(w)
       setPendingWithdrawalCents(pendingW)
+      setTotalPayoutCents(approvedW)
       setMembershipTier(tier)
       setThisWeekCents(earned7)
       setLastWeekCents(Math.max(0, earned14 - earned7))
@@ -79,7 +89,7 @@ export function DashboardPage() {
     void load()
   }, [load])
 
-  const totalLifetimeCents = stats.paidCents + stats.pendingCents
+  const totalEarnedCents = stats.totalEarnedCents
   const greeting = profile?.first_name?.trim()
     ? `Welcome back, ${profile.first_name.trim()}`
     : 'Welcome back'
@@ -94,7 +104,7 @@ export function DashboardPage() {
   }, [thisWeekCents, lastWeekCents, weekOverWeekDiff])
 
   const avgPerSurveyCents =
-    stats.completedCount > 0 ? Math.round(totalLifetimeCents / stats.completedCount) : 0
+    stats.completedCount > 0 ? Math.round(totalEarnedCents / stats.completedCount) : 0
 
   const previewSurveys = useMemo(() => {
     const available = surveys.filter((s) => !completedIds.has(s.id))
@@ -150,8 +160,8 @@ export function DashboardPage() {
                   <div className="earnings-hero-metrics">
                     <div className="earnings-hero-metric earnings-hero-metric--primary">
                       <span className="earnings-hero-metric-label">Total earned</span>
-                      <span className="earnings-hero-metric-value">{formatCents(totalLifetimeCents)}</span>
-                      <span className="earnings-hero-metric-hint">Lifetime from completed surveys</span>
+                      <span className="earnings-hero-metric-value">{formatCents(totalEarnedCents)}</span>
+                      <span className="earnings-hero-metric-hint">All rewards from completed surveys</span>
                     </div>
                     <div className="earnings-hero-metric">
                       <span className="earnings-hero-metric-label">Surveys done</span>
@@ -160,7 +170,12 @@ export function DashboardPage() {
                     <div className="earnings-hero-metric earnings-hero-metric--pending">
                       <span className="earnings-hero-metric-label">Pending payout</span>
                       <span className="earnings-hero-metric-value">{formatCents(pendingWithdrawalCents)}</span>
-                      <span className="earnings-hero-metric-hint">Requested withdrawals awaiting review</span>
+                      <span className="earnings-hero-metric-hint">Amount requested to withdraw (awaiting admin)</span>
+                    </div>
+                    <div className="earnings-hero-metric">
+                      <span className="earnings-hero-metric-label">Total payout</span>
+                      <span className="earnings-hero-metric-value">{formatCents(totalPayoutCents)}</span>
+                      <span className="earnings-hero-metric-hint">Withdrawals approved by admin</span>
                     </div>
                   </div>
                 </div>
@@ -172,7 +187,7 @@ export function DashboardPage() {
                     <FiDollarSign aria-hidden />
                   </div>
                   <p className="earnings-stat-card-label">Total earned</p>
-                  <p className="earnings-stat-card-value">{formatCents(totalLifetimeCents)}</p>
+                  <p className="earnings-stat-card-value">{formatCents(totalEarnedCents)}</p>
                   {trendLabel ? (
                     <p className="earnings-stat-card-trend earnings-stat-card-trend--up">
                       <FiTrendingUp aria-hidden />
@@ -190,7 +205,7 @@ export function DashboardPage() {
                   <p className="earnings-stat-card-label">Pending payout</p>
                   <p className="earnings-stat-card-value">{formatCents(pendingWithdrawalCents)}</p>
                   <p className="earnings-stat-card-muted">
-                    {pendingWithdrawalCents > 0 ? 'Withdrawal request in review' : 'No pending requests'}
+                    {pendingWithdrawalCents > 0 ? 'Amount requested; awaiting admin' : 'No pending requests'}
                   </p>
                 </article>
 
@@ -198,10 +213,10 @@ export function DashboardPage() {
                   <div className="earnings-stat-card-icon earnings-stat-card-icon--quality">
                     <FiBarChart2 aria-hidden />
                   </div>
-                  <p className="earnings-stat-card-label">Avg. per survey</p>
-                  <p className="earnings-stat-card-value">{formatCents(avgPerSurveyCents)}</p>
+                  <p className="earnings-stat-card-label">Total payout</p>
+                  <p className="earnings-stat-card-value">{formatCents(totalPayoutCents)}</p>
                   <p className="earnings-stat-card-muted">
-                    {stats.completedCount > 0 ? 'Lifetime average reward' : 'Complete a survey to see'}
+                    {totalPayoutCents > 0 ? 'Withdrawals approved by admin' : 'No approved payouts yet'}
                   </p>
                 </article>
               </div>
@@ -288,8 +303,8 @@ export function DashboardPage() {
                     </h2>
                     <span className="earnings-overview-period">This week</span>
                   </div>
-                  <p className="earnings-overview-hero">{formatCents(totalLifetimeCents)}</p>
-                  <p className="earnings-overview-sub">Total lifetime survey rewards</p>
+                  <p className="earnings-overview-hero">{formatCents(totalEarnedCents)}</p>
+                  <p className="earnings-overview-sub">Total earned (all completed surveys)</p>
 
                   <ul className="earnings-overview-list">
                     <li>
@@ -301,8 +316,16 @@ export function DashboardPage() {
                       <strong className="earnings-overview-pending">{formatCents(pendingWithdrawalCents)}</strong>
                     </li>
                     <li>
+                      <span>Total payout</span>
+                      <strong>{formatCents(totalPayoutCents)}</strong>
+                    </li>
+                    <li>
                       <span>Available to withdraw</span>
                       <strong className="earnings-overview-available">{formatCents(withdrawableCents)}</strong>
+                    </li>
+                    <li>
+                      <span>Avg. per survey</span>
+                      <strong>{formatCents(avgPerSurveyCents)}</strong>
                     </li>
                   </ul>
 

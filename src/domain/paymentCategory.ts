@@ -107,6 +107,32 @@ export function getTiersAbove(
   return allTiers.filter((t) => t.sortOrder > current.sortOrder)
 }
 
+/**
+ * Build a {@link MembershipTier} for badge display from admin directory RPC columns.
+ * Returns null when the member has no verified workforce tier.
+ */
+export function membershipTierFromDirectoryFields(row: {
+  membership_tier_id: string | null
+  membership_tier_slug: string | null
+  membership_tier_name: string | null
+  membership_tier_badge: string | null
+}): MembershipTier | null {
+  if (!row.membership_tier_id?.trim()) return null
+  return {
+    id: row.membership_tier_id,
+    slug: row.membership_tier_slug,
+    name: (row.membership_tier_name ?? 'Member').trim() || 'Member',
+    btcAmount: '',
+    usdAmount: 0,
+    payoutLimit: '',
+    features: [],
+    badge: row.membership_tier_badge?.trim() || undefined,
+    buttonColor: 'grey',
+    sortOrder: 0,
+    isActive: true,
+  }
+}
+
 export async function fetchMemberVerifiedMembershipTier(userId: string): Promise<MembershipTier | null> {
   const client = assertSupabaseConfigured()
   const { data: payments, error } = await client
