@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { FaTelegram } from 'react-icons/fa'
 import { FiAlertTriangle } from 'react-icons/fi'
 import { APP_NAME } from '../../config/brand'
+import { TELEGRAM_SUPPORT_URL } from '../../config/support'
 import { useAuth } from './AuthContext'
 
 /**
@@ -23,15 +25,21 @@ export function AccountSuspendedScreen() {
         </p>
         <p className="account-suspended-hint">
           Please review our <Link to="/terms">Terms of Service</Link> and{' '}
-          <Link to="/privacy">Privacy Policy</Link>. If you believe this is a mistake, contact support using the email on
-          our website.
+          <Link to="/privacy">Privacy Policy</Link>. If you believe this is a mistake, contact us on Telegram — we will
+          review your case.
         </p>
         <div className="account-suspended-actions">
-          <Link to="/terms" className="account-suspended-link-btn">
-            Read policies
-          </Link>
+          <a
+            href={TELEGRAM_SUPPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="account-suspended-link-btn account-suspended-contact"
+          >
+            <FaTelegram aria-hidden className="account-suspended-contact-icon" />
+            Contact support
+          </a>
           <button type="button" className="account-suspended-signout" onClick={() => void signOut()}>
-            Sign out
+            Log out
           </button>
         </div>
       </div>

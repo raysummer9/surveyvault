@@ -8,6 +8,10 @@
   -moz-osx-font-smoothing: grayscale;
   /** Dashboard / signed-in main column (matches survey & support pages) */
   --app-dashboard-bg: #f1f5f9;
+  /** Mobile vertical rhythm (tuned in @media max-width 768px) */
+  --mobile-stack-gap: 20px;
+  --mobile-section-pad-y: 24px;
+  --mobile-card-gap: 16px;
 }
 
 *,
@@ -3133,8 +3137,63 @@ body {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --mobile-stack-gap: 22px;
+    --mobile-section-pad-y: 28px;
+    --mobile-card-gap: 18px;
+  }
+
+  .landing-hero {
+    padding: 40px 20px 52px;
+  }
+
+  .landing-hero-inner {
+    gap: 36px;
+  }
+
+  .landing-trusted-by {
+    padding: 44px 20px;
+  }
+
+  .landing-benefits {
+    padding: 52px 20px;
+  }
+
+  .landing-benefits-subtitle {
+    margin-bottom: 32px;
+  }
+
+  .landing-benefits-grid {
+    gap: 20px;
+  }
+
+  .landing-featured {
+    padding: 52px 20px;
+  }
+
+  .landing-featured-header {
+    margin-bottom: 28px;
+    gap: 20px;
+  }
+
+  .landing-featured-grid {
+    gap: 20px;
+  }
+
+  .landing-testimonials {
+    padding: 48px 20px;
+  }
+
+  .landing-testimonials-subtitle {
+    margin-bottom: 32px;
+  }
+
+  .landing-stats {
+    padding: 44px 20px;
+  }
+
   .landing-cta-card {
-    padding: 36px 24px;
+    padding: 36px 22px;
   }
 
   .landing-cta-title {
@@ -3145,9 +3204,14 @@ body {
     flex-direction: column;
   }
 
+  .landing-footer {
+    padding: 44px 20px 28px;
+  }
+
   .landing-footer-inner {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 36px;
+    margin-bottom: 28px;
   }
 
   .landing-footer-legal {
@@ -11720,10 +11784,48 @@ svg.spin {
   }
 
   .public-page-content:not(.landing-page):not(.open-projects-page):not(.what-to-expect-page) {
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+    padding-top: var(--mobile-section-pad-y, 28px);
+    padding-bottom: max(36px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .open-projects-hero {
+    padding: 28px 18px 28px;
+  }
+
+  .open-projects-hero-top {
+    margin-bottom: 22px;
+    gap: 20px;
+  }
+
+  .open-projects-title {
+    margin-top: 20px;
+  }
+
+  .expect-hero {
+    padding: 56px 20px 48px;
+  }
+
+  .legal-page {
+    padding: 28px 18px 44px;
+  }
+
+  .legal-page h1 {
+    margin-bottom: 12px;
+  }
+
+  .legal-page-updated {
+    margin-bottom: 28px;
+  }
+
+  .legal-page h2 {
+    margin: 28px 0 10px;
+  }
+
+  .legal-page-markdown h1,
+  .legal-page-markdown h2 {
+    margin-top: 28px;
   }
 
   .login-layout {
@@ -12262,10 +12364,36 @@ svg.spin {
   }
 
   .page {
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-top: max(16px, env(safe-area-inset-top, 0px));
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(36px, env(safe-area-inset-bottom, 0px));
+    gap: var(--mobile-stack-gap, 22px);
+  }
+
+  .page .page-header {
+    margin-bottom: 4px;
+  }
+
+  .page .page-header h2 {
+    margin-bottom: 6px;
+  }
+
+  .page .page-header p {
+    margin-top: 8px;
+  }
+
+  .panel {
+    gap: var(--mobile-card-gap, 18px);
+    padding: 18px 16px;
+  }
+
+  .panel-muted {
+    padding: 16px;
+  }
+
+  .key-values {
+    gap: 14px;
   }
 
   .dashboard-shell {
@@ -12411,18 +12539,23 @@ svg.spin {
   }
 
   .page.surveys-page {
-    padding-left: max(12px, env(safe-area-inset-left, 0px));
-    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
   }
 
   .surveys-page-inner {
     padding-left: 0;
     padding-right: 0;
+    padding-bottom: 8px;
   }
 
   .surveys-page-toolbar-top {
     flex-direction: column;
     align-items: stretch;
+    margin-bottom: 22px;
+    gap: 14px;
   }
 
   .surveys-page-title {
@@ -12451,12 +12584,35 @@ svg.spin {
   .surveys-daily-limit-banner {
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 22px;
+    gap: 10px;
+  }
+
+  .surveys-page-panel {
+    margin-bottom: 24px;
+    padding: 18px 16px 20px;
+  }
+
+  .surveys-card-grid {
+    gap: 18px;
+  }
+
+  .surveys-card {
+    padding: 18px 16px 18px;
   }
 
   .page.earnings-page {
-    padding-left: max(12px, env(safe-area-inset-left, 0px));
-    padding-right: max(12px, env(safe-area-inset-right, 0px));
-    padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .earnings-page-inner {
+    gap: var(--mobile-stack-gap, 20px);
+  }
+
+  .earnings-page-toolbar {
+    margin-bottom: 12px;
   }
 
   .earnings-page-title {
@@ -12465,8 +12621,31 @@ svg.spin {
     word-break: break-word;
   }
 
+  .earnings-page-subtitle {
+    margin-top: 10px;
+  }
+
   .earnings-hero {
-    padding: 14px 14px;
+    margin-top: 16px;
+    padding: 18px 16px;
+  }
+
+  .earnings-hero-metrics {
+    margin-top: 16px;
+    gap: 14px;
+  }
+
+  .earnings-stat-row {
+    margin-top: 22px;
+    gap: 16px;
+  }
+
+  .earnings-survey-preview {
+    margin-top: 24px;
+  }
+
+  .earnings-survey-preview-head {
+    margin-bottom: 16px;
   }
 
   .earnings-mini-withdraw {
@@ -12487,6 +12666,19 @@ svg.spin {
   .support-page-shell {
     padding-left: max(0px, env(safe-area-inset-left, 0px));
     padding-right: max(0px, env(safe-area-inset-right, 0px));
+    gap: 28px;
+  }
+
+  .support-email-panel {
+    padding: 22px 18px;
+  }
+
+  .support-faq-section {
+    gap: 18px;
+  }
+
+  .support-faq-list {
+    gap: 12px;
   }
 }
 
@@ -12515,6 +12707,19 @@ svg.spin {
   .public-page-content:not(.landing-page):not(.open-projects-page):not(.what-to-expect-page) {
     padding-left: max(14px, env(safe-area-inset-left, 0px));
     padding-right: max(14px, env(safe-area-inset-right, 0px));
+    padding-top: 24px;
+    padding-bottom: 40px;
+  }
+
+  .page {
+    gap: 20px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .legal-page {
+    padding: 24px 16px 40px;
   }
 
   .sidebar {
@@ -12737,6 +12942,8 @@ svg.spin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
   height: 44px;
   border-radius: 12px;
   background: linear-gradient(145deg, #5a7dff, #6f55f4);
@@ -12745,7 +12952,18 @@ svg.spin {
   text-decoration: none;
 }
 
+.account-suspended-contact {
+  gap: 8px;
+}
+
+.account-suspended-contact-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
 .account-suspended-signout {
+  width: 100%;
+  box-sizing: border-box;
   height: 42px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
