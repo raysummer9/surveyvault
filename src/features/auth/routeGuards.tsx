@@ -49,7 +49,7 @@ export function RequireOnboardingStep({ children, step }: RequireOnboardingStepP
   const { loading, onboarding, profile } = useAuth()
   if (loading) return <section style={{ padding: '24px' }}>Loading...</section>
   if (isAdminApproved(profile)) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/dashboard/earnings" replace />
   }
   if (isOnboardingRejected(profile)) {
     if (step === 'profile') return children

@@ -57,6 +57,14 @@ export const appRouter = createBrowserRouter([
     errorElement: <NotFoundPage />,
     children: [
       { index: true, element: <LandingPage /> },
+      {
+        path: 'dashboard',
+        element: (
+          <RequireAuth>
+            <PostLoginRedirect />
+          </RequireAuth>
+        ),
+      },
       { path: 'open-projects', element: <OpenProjectsPage /> },
       { path: 'what-to-expect', element: <WhatToExpectPage /> },
       { path: 'terms', element: <TermsPage /> },
@@ -126,14 +134,6 @@ export const appRouter = createBrowserRouter([
       { path: 'workforce/payment', element: <Navigate to="/dashboard/workforce/payment" replace /> },
       { path: 'workforce/upgrade', element: <Navigate to="/dashboard/workforce/upgrade" replace /> },
       { path: 'support', element: <Navigate to="/dashboard/support" replace /> },
-      {
-        path: 'dashboard',
-        element: (
-          <RequireAuth>
-            <PostLoginRedirect />
-          </RequireAuth>
-        ),
-      },
       {
         path: 'dashboard/surveys',
         element: (
