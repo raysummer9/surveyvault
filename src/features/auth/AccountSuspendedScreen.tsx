@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { FaTelegram } from 'react-icons/fa'
 import { FiAlertTriangle } from 'react-icons/fi'
 import { APP_NAME } from '../../config/brand'
-import { TELEGRAM_SUPPORT_URL } from '../../config/support'
+import { useTelegramSupportUrl } from '../support/useTelegramSupportUrl'
 import { useAuth } from './AuthContext'
 
 /**
@@ -11,6 +11,7 @@ import { useAuth } from './AuthContext'
  */
 export function AccountSuspendedScreen() {
   const { signOut } = useAuth()
+  const telegramUrl = useTelegramSupportUrl()
 
   return (
     <div className="account-suspended-screen" role="alertdialog" aria-labelledby="account-suspended-title">
@@ -30,7 +31,7 @@ export function AccountSuspendedScreen() {
         </p>
         <div className="account-suspended-actions">
           <a
-            href={TELEGRAM_SUPPORT_URL}
+            href={telegramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="account-suspended-link-btn account-suspended-contact"

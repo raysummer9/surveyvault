@@ -5,7 +5,8 @@ import { IoWalletOutline } from 'react-icons/io5'
 import { HiOutlineMenu } from 'react-icons/hi'
 import { AppSidebarLayout, useSidebar } from '../../shared/ui/AppSidebarLayout'
 import { APP_NAME } from '../../config/brand'
-import { SUPPORT_EMAIL, supportMailto, TELEGRAM_SUPPORT_URL } from '../../config/support'
+import { SUPPORT_EMAIL, supportMailto } from '../../config/support'
+import { useTelegramSupportUrl } from './useTelegramSupportUrl'
 import { DAILY_SURVEY_COMPLETION_LIMIT } from '../../domain/surveyLimits'
 
 const FAQ_ITEMS = [
@@ -48,6 +49,7 @@ function SupportMobileHeader() {
 }
 
 export function SupportPage() {
+  const telegramUrl = useTelegramSupportUrl()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -141,7 +143,7 @@ export function SupportPage() {
                   <span className="support-email-value">@taskpluse</span>
                 </div>
                 <a
-                  href={TELEGRAM_SUPPORT_URL}
+                  href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="support-telegram-open"

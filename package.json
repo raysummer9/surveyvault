@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:seed-surveys": "node scripts/build-seed-20-surveys-sql.mjs"
+    "generate:seed-surveys": "node scripts/build-seed-20-surveys-sql.mjs",
+    "db:sql": "bash scripts/run-sql.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",

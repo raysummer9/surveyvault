@@ -47,6 +47,7 @@ import { AdminUsersPage } from '../features/admin/AdminUsersPage'
 import { AdminUserDetailPage } from '../features/admin/AdminUserDetailPage'
 import { AdminSettingsPage } from '../features/admin/AdminSettingsPage'
 import { AdminTermsPage } from '../features/admin/AdminTermsPage'
+import { AdminSupportSettingsPage } from '../features/admin/AdminSupportSettingsPage'
 import { TermsPage } from '../features/public/TermsPage'
 import { PrivacyPage } from '../features/public/PrivacyPage'
 
@@ -269,6 +270,7 @@ export const appRouter = createBrowserRouter([
               { path: 'users', element: <AdminUsersPage /> },
               { path: 'settings', element: <AdminSettingsPage /> },
               { path: 'terms', element: <AdminTermsPage /> },
+              { path: 'support-settings', element: <AdminSupportSettingsPage /> },
             ],
           },
         ],

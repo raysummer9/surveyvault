@@ -18,6 +18,7 @@ const adminNavItems = [
   { to: '/admin/withdrawals', label: 'Withdrawals' },
   { to: '/admin/users', label: 'Manage users' },
   { to: '/admin/terms', label: 'Terms of Service' },
+  { to: '/admin/support-settings', label: 'Support settings' },
   { to: '/admin/settings', label: 'Account' },
 ] as const
 
@@ -77,7 +78,9 @@ export function AdminLayout() {
                         ? location.pathname === '/admin/settings'
                         : item.to === '/admin/terms'
                           ? location.pathname === '/admin/terms'
-                          : item.to === '/admin/users'
+                          : item.to === '/admin/support-settings'
+                            ? location.pathname === '/admin/support-settings'
+                            : item.to === '/admin/users'
                             ? location.pathname.startsWith('/admin/users')
                             : isActive
                   return active ? 'onboarding-nav-item active' : 'onboarding-nav-item'
@@ -142,7 +145,9 @@ export function AdminLayout() {
                           ? location.pathname === '/admin/settings'
                           : item.to === '/admin/terms'
                             ? location.pathname === '/admin/terms'
-                            : item.to === '/admin/users'
+                            : item.to === '/admin/support-settings'
+                              ? location.pathname === '/admin/support-settings'
+                              : item.to === '/admin/users'
                               ? location.pathname.startsWith('/admin/users')
                               : isActive
                     return active ? 'onboarding-mobile-link active' : 'onboarding-mobile-link'
