@@ -125,6 +125,7 @@ export function SupportPage() {
               </div>
             </article>
 
+            {telegramUrl ? (
             <article className="support-email-panel support-telegram-panel">
               <div className="support-email-panel-left">
                 <div className="support-email-panel-icon support-telegram-panel-icon" aria-hidden>
@@ -152,6 +153,7 @@ export function SupportPage() {
                 </a>
               </div>
             </article>
+            ) : null}
           </div>
 
           <div className="support-tips-section">

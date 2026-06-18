@@ -1,26 +1,28 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { z } from 'zod'
-import { DEFAULT_TELEGRAM_SUPPORT_URL } from '../../config/support'
 import {
   adminUpsertPlatformSupportSettings,
   fetchPlatformSupportSettings,
 } from '../../domain/platformSupportSettings'
 import { AdminPageSection } from '../../shared/ui/AdminPageSection'
 
-const telegramUrlSchema = z
-  .string()
-  .trim()
-  .url('Enter a valid URL.')
-  .refine((u) => /^https:\/\/(t\.me|telegram\.me)\//i.test(u), {
-    message: 'Use a Telegram link (https://t.me/yourchannel or https://telegram.me/...).',
-  })
+const telegramUrlSchema = z.union([
+  z.literal(''),
+  z
+    .string()
+    .trim()
+    .url('Enter a valid URL.')
+    .refine((u) => /^https:\/\/(t\.me|telegram\.me)\//i.test(u), {
+      message: 'Use a Telegram link (https://t.me/yourchannel or https://telegram.me/...).',
+    }),
+])
 
 export function AdminSupportSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [telegramUrl, setTelegramUrl] = useState<string>(DEFAULT_TELEGRAM_SUPPORT_URL)
+  const [telegramUrl, setTelegramUrl] = useState('')
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -29,15 +31,15 @@ export function AdminSupportSettingsPage() {
     try {
       const row = await fetchPlatformSupportSettings()
       if (row) {
-        setTelegramUrl(row.telegram_url)
+        setTelegramUrl(row.telegram_url ?? '')
         setUpdatedAt(row.updated_at)
       } else {
-        setTelegramUrl(DEFAULT_TELEGRAM_SUPPORT_URL)
+        setTelegramUrl('')
         setUpdatedAt(null)
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load support settings.')
-      setTelegramUrl(DEFAULT_TELEGRAM_SUPPORT_URL)
+      setTelegramUrl('')
     } finally {
       setLoading(false)
     }
@@ -59,7 +61,11 @@ export function AdminSupportSettingsPage() {
     setSaving(true)
     try {
       await adminUpsertPlatformSupportSettings({ telegram_url: parsed.data })
-      setSuccess('Telegram link saved. Support page, floating button, and suspended-account screen will use it.')
+      setSuccess(
+        parsed.data
+          ? 'Telegram link saved. Members will see it on the support page and dashboard.'
+          : 'Telegram link removed. Members will no longer see the Telegram button or panel.',
+      )
       await load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed.')
@@ -71,13 +77,13 @@ export function AdminSupportSettingsPage() {
   return (
     <AdminPageSection
       title="Support settings"
-      description="Telegram link shown to members on the support page, dashboard floating button, and account-suspended notice."
+      description="Optional Telegram link for members. Leave blank to hide Telegram on the support page, dashboard button, and suspended-account screen."
     >
       {loading ? (
         <p className="panel-muted">Loading…</p>
       ) : (
         <form className="auth-form admin-settings-form admin-support-form panel" onSubmit={handleSubmit} noValidate>
-          <label htmlFor="admin-support-telegram">Telegram URL</label>
+          <label htmlFor="admin-support-telegram">Telegram URL (optional)</label>
           <input
             id="admin-support-telegram"
             type="url"
@@ -88,7 +94,8 @@ export function AdminSupportSettingsPage() {
             placeholder="https://t.me/yourchannel"
           />
           <p className="panel-muted admin-settings-hint">
-            Must start with <code>https://t.me/</code> or <code>https://telegram.me/</code>.
+            When set, must start with <code>https://t.me/</code> or <code>https://telegram.me/</code>. Clear the field
+            and save to hide Telegram for members.
             {updatedAt ? (
               <>
                 {' '}
@@ -103,7 +110,7 @@ export function AdminSupportSettingsPage() {
             </p>
           ) : null}
           <button type="submit" className="auth-submit" disabled={saving}>
-            {saving ? 'Saving…' : 'Save Telegram link'}
+            {saving ? 'Saving…' : 'Save support settings'}
           </button>
         </form>
       )}

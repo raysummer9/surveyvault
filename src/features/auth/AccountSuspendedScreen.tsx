@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { FaTelegram } from 'react-icons/fa'
 import { FiAlertTriangle } from 'react-icons/fi'
 import { APP_NAME } from '../../config/brand'
+import { SUPPORT_EMAIL, supportMailto } from '../../config/support'
 import { useTelegramSupportUrl } from '../support/useTelegramSupportUrl'
 import { useAuth } from './AuthContext'
 
@@ -26,19 +27,30 @@ export function AccountSuspendedScreen() {
         </p>
         <p className="account-suspended-hint">
           Please review our <Link to="/terms">Terms of Service</Link> and{' '}
-          <Link to="/privacy">Privacy Policy</Link>. If you believe this is a mistake, contact us on Telegram — we will
-          review your case.
+          <Link to="/privacy">Privacy Policy</Link>.
+          {telegramUrl ? (
+            <> If you believe this is a mistake, contact us on Telegram — we will review your case.</>
+          ) : (
+            <>
+              {' '}
+              If you believe this is a mistake, email{' '}
+              <a href={supportMailto(`${APP_NAME} account suspension`)}>{SUPPORT_EMAIL}</a> — we will review your
+              case.
+            </>
+          )}
         </p>
         <div className="account-suspended-actions">
-          <a
-            href={telegramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="account-suspended-link-btn account-suspended-contact"
-          >
-            <FaTelegram aria-hidden className="account-suspended-contact-icon" />
-            Contact support
-          </a>
+          {telegramUrl ? (
+            <a
+              href={telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="account-suspended-link-btn account-suspended-contact"
+            >
+              <FaTelegram aria-hidden className="account-suspended-contact-icon" />
+              Contact support
+            </a>
+          ) : null}
           <button type="button" className="account-suspended-signout" onClick={() => void signOut()}>
             Log out
           </button>

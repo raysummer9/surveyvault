@@ -1,10 +1,10 @@
 /** Member support inbox (dashboard & help). */
 export const SUPPORT_EMAIL = 'taskpulse182@gmail.com' as const
 
-/** Official Telegram support (Task Pluse Support) — fallback when DB settings are unavailable. */
+/** Default Telegram URL for new databases (migration seed only). Members see nothing until admin sets a URL. */
 export const DEFAULT_TELEGRAM_SUPPORT_URL = 'https://t.me/taskpluse' as const
 
-/** @deprecated Prefer `useTelegramSupportUrl()` for the live admin-configured link. */
+/** @deprecated Use `useTelegramSupportUrl()` — returns null when Telegram is disabled. */
 export const TELEGRAM_SUPPORT_URL = DEFAULT_TELEGRAM_SUPPORT_URL
 
 export function supportMailto(subject?: string): string {

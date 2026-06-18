@@ -1,5 +1,4 @@
 import { assertSupabaseConfigured } from '../lib/supabase'
-import { DEFAULT_TELEGRAM_SUPPORT_URL } from '../config/support'
 
 export type PlatformSupportSettingsRow = {
   id: number
@@ -26,7 +25,7 @@ export async function adminUpsertPlatformSupportSettings(input: { telegram_url: 
   if (error) throw error
 }
 
-export function resolveTelegramSupportUrl(row: PlatformSupportSettingsRow | null | undefined): string {
+export function resolveTelegramSupportUrl(row: PlatformSupportSettingsRow | null | undefined): string | null {
   const url = row?.telegram_url?.trim()
-  return url || DEFAULT_TELEGRAM_SUPPORT_URL
+  return url || null
 }

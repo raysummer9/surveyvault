@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { DEFAULT_TELEGRAM_SUPPORT_URL } from '../../config/support'
 import { fetchPlatformSupportSettings, resolveTelegramSupportUrl } from '../../domain/platformSupportSettings'
 
-/** Loads Telegram support URL from platform settings; falls back to config default. */
-export function useTelegramSupportUrl(): string {
-  const [url, setUrl] = useState<string>(DEFAULT_TELEGRAM_SUPPORT_URL)
+/** Loads Telegram support URL from platform settings; null when unset or cleared by admin. */
+export function useTelegramSupportUrl(): string | null {
+  const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -13,7 +12,7 @@ export function useTelegramSupportUrl(): string {
         if (!cancelled) setUrl(resolveTelegramSupportUrl(row))
       })
       .catch(() => {
-        /* keep default */
+        if (!cancelled) setUrl(null)
       })
     return () => {
       cancelled = true
