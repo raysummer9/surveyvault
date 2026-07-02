@@ -4352,7 +4352,7 @@ body {
   position: fixed;
   z-index: 40;
   right: max(16px, env(safe-area-inset-right, 0px));
-  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  bottom: max(88px, calc(20px + env(safe-area-inset-bottom, 0px)));
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -4381,7 +4381,7 @@ body {
 @media (min-width: 1024px) {
   .telegram-support-fab {
     right: max(24px, env(safe-area-inset-right, 0px));
-    bottom: max(28px, env(safe-area-inset-bottom, 0px));
+    bottom: max(96px, calc(28px + env(safe-area-inset-bottom, 0px)));
   }
 }
 
