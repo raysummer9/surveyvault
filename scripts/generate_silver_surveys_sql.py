@@ -329,8 +329,8 @@ def slug_prefix(slug: str) -> str:
     return re.sub(r"[^a-z0-9]", "", slug)[:24]
 
 
-def build_twenty_five_questions(short: str) -> list[dict]:
-    """25 questions: 6 choice + 3 text + 7 choice + 2 text + 7 choice."""
+def build_thirty_questions(short: str) -> list[dict]:
+    """30 questions: 8 choice + 3 text + 9 choice + 2 text + 8 choice (meets MIN_SURVEY_QUESTIONS)."""
     qs: list[dict] = []
     idx = 0
 
@@ -363,6 +363,14 @@ def build_twenty_five_questions(short: str) -> list[dict]:
         (
             "How comfortable are you admitting uncertainty or changing your mind publicly about this?",
             ["Very comfortable", "Somewhat", "Neutral", "Uncomfortable", "I avoid it"],
+        ),
+        (
+            "When resources are scarce (time, money, attention), how do you usually decide what to protect first?",
+            ["Family or close ties", "Health or rest", "Work or income", "Principles or causes", "Something else"],
+        ),
+        (
+            "How much does fear of being judged shape what you say about this topic in ordinary conversation?",
+            ["A great deal", "Quite a bit", "Somewhat", "A little", "Not much"],
         ),
     ]
     for lab, opts in stems_open:
@@ -405,6 +413,14 @@ def build_twenty_five_questions(short: str) -> list[dict]:
             "Do you experience this topic more as a private inner struggle or a public political fight?",
             ["Mostly private", "More private", "Both equally", "More public", "Mostly public"],
         ),
+        (
+            "How often do you update your views based on new evidence vs. doubling down?",
+            ["Update often", "Sometimes update", "Slow to update", "Rarely update", "Depends on the source"],
+        ),
+        (
+            "Which risk worries you more in this area: being exploited, or missing an opportunity to help?",
+            ["Being exploited", "Missing help", "Both equally", "Neither—different fears", "Not sure"],
+        ),
     ]
     for lab, opts in stems_mid:
         qs.append({"id": cid(), "type": "choice", "label": lab, "options": opts})
@@ -442,6 +458,10 @@ def build_twenty_five_questions(short: str) -> list[dict]:
             ["Essential", "Important", "Moderate", "Minor", "I think alone"],
         ),
         (
+            "Would you rather improve your own situation first, or work on collective change first?",
+            ["Own situation", "Collective change", "Both in parallel", "Refuse the split", "Context-dependent"],
+        ),
+        (
             "Final calibration: how representative do you think your answers are of people in situations very different from yours?",
             ["Very representative", "Somewhat", "Not very", "I doubt it", "I actively don’t know"],
         ),
@@ -449,7 +469,7 @@ def build_twenty_five_questions(short: str) -> list[dict]:
     for lab, opts in stems_close:
         qs.append({"id": cid(), "type": "choice", "label": lab, "options": opts})
 
-    assert len(qs) == 25, len(qs)
+    assert len(qs) == 30, len(qs)
     return qs
 
 
@@ -459,7 +479,7 @@ def render_inserts(surveys: list[dict], global_start_index: int) -> str:
     for j, s in enumerate(surveys):
         i = global_start_index + j
         sp = slug_prefix(s["slug"])
-        questions = build_twenty_five_questions(sp)
+        questions = build_thirty_questions(sp)
         payload = json.dumps(questions, ensure_ascii=False)
         reward = REWARDS_CENTS[i]
         minutes = EST_MINUTES[i]
@@ -488,6 +508,21 @@ on conflict (slug) do nothing;
     return "".join(parts)
 
 
+def render_updates(surveys: list[dict]) -> str:
+    """UPDATE questions for existing silver surveys (slug prefix silver-)."""
+    parts: list[str] = []
+    for s in surveys:
+        sp = slug_prefix(s["slug"])
+        payload = json.dumps(build_thirty_questions(sp), ensure_ascii=False)
+        slug = s["slug"]
+        parts.append(f"""update public.surveys
+set questions = $json${payload}$json$::jsonb
+where slug = '{slug}';
+
+""")
+    return "".join(parts)
+
+
 def main() -> None:
     surveys = build_surveys()
     if len(surveys) != 233:
@@ -505,13 +540,25 @@ def main() -> None:
         "20260416_seed_silver_deep_surveys_part4_of_4.sql",
     ]
 
-    header = """-- Silver-tier surveys ($1–$2 reward), 25 questions each (subset of full 233-survey seed).
+    header = """-- Silver-tier surveys ($1–$2 reward), 30 questions each (meets MIN_SURVEY_QUESTIONS).
 -- Reflective mix (shortened from Gold/Platinum templates). Idempotent on slug.
 --
 -- Requires public.surveys, payment_categories (silver), survey_category / payment_category_id columns.
 -- Safe to run parts in order or separately; re-runs skip existing slugs (ON CONFLICT DO NOTHING).
 
 """
+
+    update_header = """-- Patch existing silver seed surveys from 25 → 30 questions (admin MIN_SURVEY_QUESTIONS).
+-- Run after 20260413–20260416 if those seeds were already applied. Safe to re-run.
+
+"""
+
+    update_files = [
+        "20260419_update_silver_surveys_thirty_questions_part1_of_4.sql",
+        "20260420_update_silver_surveys_thirty_questions_part2_of_4.sql",
+        "20260421_update_silver_surveys_thirty_questions_part3_of_4.sql",
+        "20260422_update_silver_surveys_thirty_questions_part4_of_4.sql",
+    ]
 
     mig_dir = Path(__file__).resolve().parent.parent / "supabase" / "migrations"
     offset = 0
@@ -522,6 +569,16 @@ def main() -> None:
         banner = f"-- Part {part_num} of 4 — {len(chunk)} surveys (global rows {offset - len(chunk) + 1}–{offset} of 233).\n\n"
         path = mig_dir / name
         path.write_text(header + banner + body, encoding="utf-8")
+        print(f"Wrote {path}")
+
+    offset = 0
+    for part_num, (size, name) in enumerate(zip(chunk_sizes, update_files), start=1):
+        chunk = surveys[offset : offset + size]
+        offset += size
+        body = render_updates(chunk)
+        banner = f"-- Part {part_num} of 4 — {len(chunk)} updates.\n\n"
+        path = mig_dir / name
+        path.write_text(update_header + banner + body, encoding="utf-8")
         print(f"Wrote {path}")
 
     old_monolith = mig_dir / "20260413_seed_silver_deep_surveys.sql"
