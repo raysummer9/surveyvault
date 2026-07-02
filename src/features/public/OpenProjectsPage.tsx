@@ -30,7 +30,7 @@ const featuredSurvey = {
   title: 'Consumer Spending Habits 2024',
   description:
     'Comprehensive financial behavior study by leading research firm. 25 min · English · Global',
-  reward: '$12.00',
+  reward: '$145.00',
   badges: ['High Reward', 'Limited Spots'],
 } as const
 
@@ -38,7 +38,7 @@ const openSurveys = [
   {
     title: 'Tech Usage Habits 2024',
     description: 'Share your experience with technology and smart devices in daily life.',
-    reward: '$3.50',
+    reward: '$112.50',
     duration: '15 min',
     language: 'English',
     region: 'Global',
@@ -50,7 +50,7 @@ const openSurveys = [
   {
     title: 'Wellness & Mental Health Trends',
     description: 'Share insights on wellness routines and mental health awareness.',
-    reward: '$2.00',
+    reward: '$95.00',
     duration: '10 min',
     language: 'EN/FR',
     region: 'US/UK',
@@ -62,7 +62,7 @@ const openSurveys = [
   {
     title: 'Investment Behavior Study',
     description: 'Financial decision-making and investment preferences research.',
-    reward: '$8.50',
+    reward: '$138.00',
     duration: '30 min',
     language: 'English',
     region: 'US/CA/AU',
@@ -74,7 +74,7 @@ const openSurveys = [
   {
     title: 'Health & Wellness 2024',
     description: 'Share insights on your health routines, fitness habits, and wellness goals.',
-    reward: '$4.00',
+    reward: '$108.00',
     duration: '20 min',
     language: 'English',
     region: 'US/UK/AU',
@@ -86,7 +86,7 @@ const openSurveys = [
   {
     title: 'Environmental Attitudes',
     description: 'Your views on sustainability, climate change, and eco-friendly products.',
-    reward: '$2.75',
+    reward: '$92.50',
     duration: '10 min',
     language: 'English',
     region: 'Global',
@@ -98,7 +98,7 @@ const openSurveys = [
   {
     title: 'Media Consumption',
     description: 'How you consume news, entertainment, and social media content daily.',
-    reward: '$1.80',
+    reward: '$90.00',
     duration: '8 min',
     language: 'English',
     region: 'Global',
@@ -110,7 +110,7 @@ const openSurveys = [
   {
     title: 'Financial Services Survey',
     description: 'Share your banking habits, investment preferences, and financial goals.',
-    reward: '$5.00',
+    reward: '$125.00',
     duration: '25 min',
     language: 'English',
     region: 'Global',
@@ -122,7 +122,7 @@ const openSurveys = [
   {
     title: 'Travel & Hospitality',
     description: 'Your travel preferences, booking habits, and destination choices.',
-    reward: '$3.25',
+    reward: '$102.00',
     duration: '12 min',
     language: 'English',
     region: 'Global',
@@ -134,7 +134,7 @@ const openSurveys = [
   {
     title: 'Food & Dining Habits',
     description: 'Eating preferences, restaurant choices, and dietary habits.',
-    reward: '$2.00',
+    reward: '$97.00',
     duration: '8 min',
     language: 'English',
     region: 'Global',
